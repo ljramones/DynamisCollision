@@ -1,0 +1,28 @@
+# Maven
+**/target/
+.mvn/timing.properties
+dependency-reduced-pom.xml
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+.factorypath
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Env files
+.env
+.env.*
+
+# Logs and reports
+*.log
+hs_err_pid*
+replay_pid*
+*.hprof
+coverage/
