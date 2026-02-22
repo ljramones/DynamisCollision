@@ -11,8 +11,9 @@ Collision detection library for rendering-engine integration, organized as a JDK
 
 - JDK `25` (already pinned in `.java-version`)
 - Maven `3.9+`
-- Local Maven artifact for Vectrix:
+- Local Maven artifacts:
   - `org.vectrix:vectrix:1.10.9`
+  - `org.meshforge:meshforge:1.1.0`
 
 ## Project Layout
 
