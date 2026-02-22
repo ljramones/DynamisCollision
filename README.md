@@ -54,6 +54,11 @@ mvn -pl demo -am compile
   <artifactId>vectrix</artifactId>
   <version>1.10.9</version>
 </dependency>
+<dependency>
+  <groupId>org.meshforge</groupId>
+  <artifactId>meshforge</artifactId>
+  <version>1.1.0</version>
+</dependency>
 ```
 
-This keeps Vectrix available for vector/matrix-backed collision features as the library expands.
+This keeps Vectrix available for vector/matrix math and MeshForge available for mesh/bounds integration as the library expands.
