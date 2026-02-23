@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2026 DynamisFX Contributors
+ * Copyright 2024-2026 DynamisCollision Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,23 @@
  * limitations under the License.
  */
 
-package org.dynamiscollision;
+package org.dynamiscollision.contact;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.List;
-import org.vectrix.core.Vector3d;
+import org.dynamiscollision.bounds.Aabb;
+import org.dynamiscollision.broadphase.SweepAndPrune3D;
+import org.dynamiscollision.events.CollisionEvent;
+import org.dynamiscollision.events.CollisionEventType;
+import org.dynamiscollision.filtering.CollisionFilter;
+import org.dynamiscollision.filtering.CollisionKind;
+import org.dynamiscollision.narrowphase.Intersection3D;
+import org.dynamiscollision.pipeline.CollisionPair;
+import org.dynamiscollision.world.CollisionWorld3D;
+import org.dynamiscollision.world.RigidBodyAdapter3D;
 import org.junit.jupiter.api.Test;
+import org.vectrix.core.Vector3d;
 
 class ContactSolver3DTest {
 
@@ -165,6 +173,42 @@ class ContactSolver3DTest {
         assertEquals(runA.top.position.y(), runB.top.position.y(), 1e-9);
         assertEquals(runA.bottom.velocity.y(), runB.bottom.velocity.y(), 1e-9);
         assertEquals(runA.top.velocity.y(), runB.top.velocity.y(), 1e-9);
+    }
+
+    @Test
+    void warmStartClampAppliesExactlyTheClampedAccumulatedDelta() {
+        Body a = body("a", 0, 0, 0, 0.5, 0.5, 0.5, 1.0, CollisionFilter.DEFAULT);
+        Body b = body("b", 0.5, 0, 0, 0.5, 0.5, 0.5, 1.0, CollisionFilter.DEFAULT);
+        a.velocity = new Vector3d(0.0, 0.0, 0.0);
+        b.velocity = new Vector3d(3.0, 0.0, 0.0);
+
+        ContactManifold3D contact = ContactGenerator3D.generate(a.aabb(), b.aabb()).orElseThrow();
+        ContactSolver3D<Body> solver = new ContactSolver3D<>(BODY_ADAPTER);
+        WarmStartImpulse warmStart = new WarmStartImpulse(-2.0, 0.0);
+
+        CollisionEvent<Body> event = new CollisionEvent<>(
+                new CollisionPair<>(a, b),
+                CollisionEventType.STAY,
+                true,
+                contact);
+        WarmStartImpulse solved = solver.solveVelocity(event, warmStart);
+
+        double expectedDelta = solved.normalImpulse() - warmStart.normalImpulse();
+        Vector3d expectedAfterWarmA = new Vector3d(2.0, 0.0, 0.0);
+        Vector3d expectedAfterWarmB = new Vector3d(1.0, 0.0, 0.0);
+        Vector3d expectedFinalA = new Vector3d(
+                expectedAfterWarmA.x() - expectedDelta * a.inverseMass,
+                expectedAfterWarmA.y(),
+                expectedAfterWarmA.z());
+        Vector3d expectedFinalB = new Vector3d(
+                expectedAfterWarmB.x() + expectedDelta * b.inverseMass,
+                expectedAfterWarmB.y(),
+                expectedAfterWarmB.z());
+
+        assertEquals(0.0, solved.normalImpulse(), 1e-9);
+        assertEquals(expectedFinalA.x(), a.velocity.x(), 1e-9);
+        assertEquals(expectedFinalB.x(), b.velocity.x(), 1e-9);
+        assertEquals(3.0, b.velocity.x() - a.velocity.x(), 1e-9);
     }
 
     private static Scenario runStackScenario(int iterations, int frames) {

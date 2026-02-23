@@ -133,6 +133,73 @@ class CollisionWorld3DTest {
     }
 
     @Test
+    void explicitThreeFrameLifecycleIsEnterStayExit() {
+        Body a = new Body("a", new Aabb(0, 0, 0, 2, 2, 2), CollisionFilter.DEFAULT);
+        Body b = new Body("b", new Aabb(1, 0, 0, 3, 2, 2), CollisionFilter.DEFAULT);
+
+        CollisionWorld3D<Body> world = new CollisionWorld3D<>(
+                new SweepAndPrune3D<>(),
+                Body::bounds,
+                Body::filter,
+                (left, right) -> ContactGenerator3D.generate(left.bounds(), right.bounds()));
+
+        List<CollisionEvent<Body>> frame1 = world.update(List.of(a, b));
+        b.setBounds(new Aabb(1, 0, 0, 3, 2, 2));
+        List<CollisionEvent<Body>> frame2 = world.update(List.of(a, b));
+        b.setBounds(new Aabb(5, 0, 0, 7, 2, 2));
+        List<CollisionEvent<Body>> frame3 = world.update(List.of(a, b));
+
+        assertEquals(1, frame1.size());
+        assertEquals(1, frame2.size());
+        assertEquals(1, frame3.size());
+        assertEquals(CollisionEventType.ENTER, frame1.get(0).type());
+        assertEquals(CollisionEventType.STAY, frame2.get(0).type());
+        assertEquals(CollisionEventType.EXIT, frame3.get(0).type());
+    }
+
+    @Test
+    void fullPipelineStepProducesOrderedLifecycleEvents() {
+        SimBody anchor = new SimBody(
+                "anchor",
+                new org.vectrix.core.Vector3d(0.0, 0.0, 0.0),
+                new org.vectrix.core.Vector3d(0.0, 0.0, 0.0),
+                0.5,
+                0.0,
+                CollisionFilter.DEFAULT);
+        SimBody mover = new SimBody(
+                "mover",
+                new org.vectrix.core.Vector3d(-2.0, 0.0, 0.0),
+                new org.vectrix.core.Vector3d(1.0, 0.0, 0.0),
+                0.5,
+                1.0,
+                CollisionFilter.DEFAULT);
+
+        CollisionWorld3D<SimBody> world = new CollisionWorld3D<>(
+                new SweepAndPrune3D<>(),
+                SimBody::aabb,
+                body -> body.filter,
+                (left, right) -> ContactGenerator3D.generate(left.aabb(), right.aabb()));
+        world.setBodyAdapter(new SimBodyAdapter());
+        world.setGravity(new org.vectrix.core.Vector3d(0.0, 0.0, 0.0));
+
+        java.util.ArrayList<CollisionEventType> timeline = new java.util.ArrayList<>();
+        for (int i = 0; i < 7; i++) {
+            List<CollisionEvent<SimBody>> events = world.step(List.of(anchor, mover), 0.5);
+            if (!events.isEmpty()) {
+                assertEquals(1, events.size());
+                timeline.add(events.get(0).type());
+            }
+        }
+        assertEquals(List.of(
+                CollisionEventType.ENTER,
+                CollisionEventType.STAY,
+                CollisionEventType.STAY,
+                CollisionEventType.STAY,
+                CollisionEventType.STAY,
+                CollisionEventType.EXIT), timeline);
+    }
+
+    @Test
     void stepValidatesDtAndAcceptsLargeDt() {
         Body a = new Body("a", new Aabb(0, 0, 0, 1, 1, 1), CollisionFilter.DEFAULT);
         Body b = new Body("b", new Aabb(0.5, 0, 0, 1.5, 1, 1), CollisionFilter.DEFAULT);
@@ -247,6 +314,78 @@ class CollisionWorld3DTest {
         @Override
         public String toString() {
             return id;
+        }
+    }
+
+    private static final class SimBody {
+        private final String id;
+        private org.vectrix.core.Vector3d position;
+        private org.vectrix.core.Vector3d velocity;
+        private final double halfExtent;
+        private final double inverseMass;
+        private final CollisionFilter filter;
+
+        private SimBody(
+                String id,
+                org.vectrix.core.Vector3d position,
+                org.vectrix.core.Vector3d velocity,
+                double halfExtent,
+                double inverseMass,
+                CollisionFilter filter) {
+            this.id = id;
+            this.position = position;
+            this.velocity = velocity;
+            this.halfExtent = halfExtent;
+            this.inverseMass = inverseMass;
+            this.filter = filter;
+        }
+
+        private Aabb aabb() {
+            return new Aabb(
+                    position.x() - halfExtent, position.y() - halfExtent, position.z() - halfExtent,
+                    position.x() + halfExtent, position.y() + halfExtent, position.z() + halfExtent);
+        }
+
+        @Override
+        public String toString() {
+            return id;
+        }
+    }
+
+    private static final class SimBodyAdapter implements RigidBodyAdapter3D<SimBody> {
+        @Override
+        public org.vectrix.core.Vector3d getPosition(SimBody body) {
+            return body.position;
+        }
+
+        @Override
+        public void setPosition(SimBody body, org.vectrix.core.Vector3d position) {
+            body.position = position;
+        }
+
+        @Override
+        public org.vectrix.core.Vector3d getVelocity(SimBody body) {
+            return body.velocity;
+        }
+
+        @Override
+        public void setVelocity(SimBody body, org.vectrix.core.Vector3d velocity) {
+            body.velocity = velocity;
+        }
+
+        @Override
+        public double getInverseMass(SimBody body) {
+            return body.inverseMass;
+        }
+
+        @Override
+        public double getRestitution(SimBody body) {
+            return 0.0;
+        }
+
+        @Override
+        public double getFriction(SimBody body) {
+            return 0.0;
         }
     }
 }
