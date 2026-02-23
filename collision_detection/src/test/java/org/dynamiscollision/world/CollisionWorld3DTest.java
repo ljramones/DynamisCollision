@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2026 DynamisFX Contributors
+ * Copyright 2024-2026 DynamisCollision Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,27 @@
  * limitations under the License.
  */
 
-package org.dynamiscollision;
+package org.dynamiscollision.world;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.List;
+import org.dynamiscollision.adapters.MeshCollisionAdapter;
+import org.dynamiscollision.bounds.Aabb;
+import org.dynamiscollision.broadphase.SweepAndPrune3D;
+import org.dynamiscollision.contact.ContactGenerator3D;
+import org.dynamiscollision.events.CollisionEvent;
+import org.dynamiscollision.events.CollisionEventType;
+import org.dynamiscollision.filtering.CollisionFilter;
+import org.dynamiscollision.filtering.CollisionKind;
+import org.dynamiscollision.pipeline.CollisionPair;
+import org.junit.jupiter.api.Test;
 import org.meshforge.core.attr.VertexSchema;
 import org.meshforge.core.mesh.MeshData;
-import org.junit.jupiter.api.Test;
+import org.meshforge.pack.buffer.PackedMesh;
+import org.meshforge.pack.layout.VertexLayout;
 
 class CollisionWorld3DTest {
 
@@ -105,8 +116,109 @@ class CollisionWorld3DTest {
         assertEquals(CollisionEventType.ENTER, events.get(0).type());
     }
 
+    @Test
+    void supportsPackedMeshWorld() {
+        PackedMesh m1 = packedMesh();
+        PackedMesh m2 = packedMesh();
+        MeshCollisionAdapter.setBounds(m1, new Aabb(0, 0, 0, 2, 2, 2));
+        MeshCollisionAdapter.setBounds(m2, new Aabb(1, 0, 0, 3, 2, 2));
+        MeshCollisionAdapter.setFilter(m1, CollisionFilter.DEFAULT);
+        MeshCollisionAdapter.setFilter(m2, CollisionFilter.DEFAULT);
+
+        CollisionWorld3D<PackedMesh> world = CollisionWorld3D.forPackedMeshesDefault();
+
+        List<CollisionEvent<PackedMesh>> events = world.update(List.of(m1, m2));
+        assertEquals(1, events.size());
+        assertEquals(CollisionEventType.ENTER, events.get(0).type());
+    }
+
+    @Test
+    void stepValidatesDtAndAcceptsLargeDt() {
+        Body a = new Body("a", new Aabb(0, 0, 0, 1, 1, 1), CollisionFilter.DEFAULT);
+        Body b = new Body("b", new Aabb(0.5, 0, 0, 1.5, 1, 1), CollisionFilter.DEFAULT);
+        CollisionWorld3D<Body> world = new CollisionWorld3D<>(
+                new SweepAndPrune3D<>(),
+                Body::bounds,
+                Body::filter,
+                (left, right) -> ContactGenerator3D.generate(left.bounds(), right.bounds()));
+
+        world.setBodyAdapter(new RigidBodyAdapter3D<>() {
+            @Override
+            public org.vectrix.core.Vector3d getPosition(Body body) {
+                return new org.vectrix.core.Vector3d(0, 0, 0);
+            }
+
+            @Override
+            public void setPosition(Body body, org.vectrix.core.Vector3d position) {
+            }
+
+            @Override
+            public org.vectrix.core.Vector3d getVelocity(Body body) {
+                return new org.vectrix.core.Vector3d(0, 0, 0);
+            }
+
+            @Override
+            public void setVelocity(Body body, org.vectrix.core.Vector3d velocity) {
+            }
+
+            @Override
+            public double getInverseMass(Body body) {
+                return 1.0;
+            }
+
+            @Override
+            public double getRestitution(Body body) {
+                return 0.0;
+            }
+
+            @Override
+            public double getFriction(Body body) {
+                return 0.0;
+            }
+        });
+
+        assertThrows(IllegalArgumentException.class, () -> world.step(List.of(a, b), 0.0));
+        assertThrows(IllegalArgumentException.class, () -> world.step(List.of(a, b), -0.01));
+        assertDoesNotThrow(() -> world.step(List.of(a, b), 10.0));
+    }
+
+    @Test
+    void eventOrderingIsDeterministicForFixedInsertionOrder() {
+        Body a = new Body("a", new Aabb(0, 0, 0, 3, 1, 1), CollisionFilter.DEFAULT);
+        Body b = new Body("b", new Aabb(1, 0, 0, 4, 1, 1), CollisionFilter.DEFAULT);
+        Body c = new Body("c", new Aabb(2, 0, 0, 5, 1, 1), CollisionFilter.DEFAULT);
+        List<Body> ordered = List.of(a, b, c);
+
+        List<String> first = eventKeysFromFreshWorld(ordered);
+        List<String> second = eventKeysFromFreshWorld(ordered);
+        assertEquals(first, second);
+    }
+
+    private static List<String> eventKeysFromFreshWorld(List<Body> items) {
+        CollisionWorld3D<Body> world = new CollisionWorld3D<>(
+                new SweepAndPrune3D<>(),
+                Body::bounds,
+                Body::filter,
+                (left, right) -> ContactGenerator3D.generate(left.bounds(), right.bounds()));
+        List<CollisionEvent<Body>> events = world.update(items);
+        List<String> keys = new ArrayList<>(events.size());
+        for (CollisionEvent<Body> event : events) {
+            keys.add(event.pair().first().id + "-" + event.pair().second().id + "-" + event.type());
+        }
+        return keys;
+    }
+
     private static MeshData mesh() {
         return new MeshData(VertexSchema.standardLit(), 0);
+    }
+
+    private static PackedMesh packedMesh() {
+        VertexLayout layout = new VertexLayout(0, new java.util.LinkedHashMap<>());
+        PackedMesh.IndexBufferView index = new PackedMesh.IndexBufferView(
+                PackedMesh.IndexType.UINT16,
+                ByteBuffer.allocate(0),
+                0);
+        return new PackedMesh(layout, ByteBuffer.allocate(0), index, List.of());
     }
 
     private static final class Body {

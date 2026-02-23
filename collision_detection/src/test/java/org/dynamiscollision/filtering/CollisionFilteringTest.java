@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2026 DynamisFX Contributors
+ * Copyright 2024-2026 DynamisCollision Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-package org.dynamiscollision;
+package org.dynamiscollision.filtering;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import org.dynamiscollision.pipeline.CollisionPair;
+import org.dynamiscollision.pipeline.FilteredCollisionPair;
 import org.junit.jupiter.api.Test;
 
 class CollisionFilteringTest {
@@ -55,5 +56,39 @@ class CollisionFilteringTest {
                 Set.of(pair), item -> null);
         assertEquals(1, result.size());
         assertTrue(result.iterator().next().responseEnabled());
+    }
+
+    @Test
+    void skipsNullPairsFromCandidates() {
+        CollisionPair<String> pair = new CollisionPair<>("a", "b");
+        Set<CollisionPair<String>> candidates = new LinkedHashSet<>();
+        candidates.add(pair);
+        candidates.add(null);
+
+        Set<FilteredCollisionPair<String>> result = CollisionFiltering.filterPairs(
+                candidates,
+                item -> CollisionFilter.DEFAULT);
+
+        assertEquals(1, result.size());
+        assertTrue(result.contains(new FilteredCollisionPair<>(pair, true)));
+    }
+
+    @Test
+    void validatesArguments() {
+        assertThrows(IllegalArgumentException.class, () -> CollisionFiltering.filterPairs(null, item -> CollisionFilter.DEFAULT));
+        assertThrows(IllegalArgumentException.class, () -> CollisionFiltering.filterPairs(Set.of(), null));
+    }
+
+    @Test
+    void returnsEmptyWhenAllPairsAreFilteredOut() {
+        CollisionPair<String> pair = new CollisionPair<>("ship", "ui");
+        Set<FilteredCollisionPair<String>> result = CollisionFiltering.filterPairs(
+                Set.of(pair),
+                key -> switch (key) {
+                    case "ship" -> new CollisionFilter(0b0001, 0b0010, CollisionKind.SOLID);
+                    case "ui" -> new CollisionFilter(0b0100, 0b1000, CollisionKind.SOLID);
+                    default -> CollisionFilter.DEFAULT;
+                });
+        assertTrue(result.isEmpty());
     }
 }
