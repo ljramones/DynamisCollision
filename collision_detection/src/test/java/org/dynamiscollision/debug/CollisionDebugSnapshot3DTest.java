@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2026 DynamisFX Contributors
+ * Copyright 2024-2026 DynamisCollision Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,18 @@
  * limitations under the License.
  */
 
-package org.dynamiscollision;
+package org.dynamiscollision.debug;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.List;
+import org.dynamiscollision.bounds.Aabb;
+import org.dynamiscollision.contact.ContactManifold3D;
+import org.dynamiscollision.contact.ContactPoint3D;
+import org.dynamiscollision.events.CollisionEvent;
+import org.dynamiscollision.events.CollisionEventType;
+import org.dynamiscollision.narrowphase.CollisionManifold3D;
+import org.dynamiscollision.pipeline.CollisionPair;
 import org.junit.jupiter.api.Test;
 
 class CollisionDebugSnapshot3DTest {
@@ -54,6 +60,34 @@ class CollisionDebugSnapshot3DTest {
                 CollisionDebugSnapshot3D.from(List.of(), null, List.of()));
         assertThrows(IllegalArgumentException.class, () ->
                 CollisionDebugSnapshot3D.from(List.of(), Body::bounds, null));
+    }
+
+    @Test
+    void ignoresNullEventsAndEventsWithoutManifold() {
+        Body a = new Body("a", new Aabb(0, 0, 0, 1, 1, 1));
+        Body b = new Body("b", new Aabb(0, 0, 0, 1, 1, 1));
+        CollisionPair<Body> pair = new CollisionPair<>(a, b);
+        CollisionEvent<Body> noManifold = new CollisionEvent<>(pair, CollisionEventType.STAY, true, null);
+
+        CollisionDebugSnapshot3D<Body> snapshot = CollisionDebugSnapshot3D.from(
+                List.of(a, b),
+                Body::bounds,
+                java.util.Arrays.asList(null, noManifold));
+
+        assertEquals(2, snapshot.items().size());
+        assertTrue(snapshot.contacts().isEmpty());
+    }
+
+    @Test
+    void snapshotCollectionsAreImmutableCopies() {
+        Body a = new Body("a", new Aabb(0, 0, 0, 1, 1, 1));
+        CollisionDebugSnapshot3D<Body> snapshot = CollisionDebugSnapshot3D.from(
+                List.of(a),
+                Body::bounds,
+                List.of());
+
+        assertThrows(UnsupportedOperationException.class, () -> snapshot.items().add(null));
+        assertThrows(UnsupportedOperationException.class, () -> snapshot.contacts().add(null));
     }
 
     private static final class Body {

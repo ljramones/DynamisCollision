@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2026 DynamisFX Contributors
+ * Copyright 2024-2026 DynamisCollision Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package org.dynamiscollision;
+package org.dynamiscollision.bounds;
 
+import org.dynamiscollision.narrowphase.Intersection3D;
 import org.meshforge.core.bounds.Aabbf;
 
 /**

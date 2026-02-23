@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2026 DynamisFX Contributors
+ * Copyright 2024-2026 DynamisCollision Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
-package org.dynamiscollision;
+package org.dynamiscollision.adapters;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
+import org.dynamiscollision.bounds.Aabb;
+import org.dynamiscollision.filtering.CollisionFilter;
+import org.dynamiscollision.filtering.CollisionKind;
+import org.junit.jupiter.api.Test;
 import org.meshforge.core.attr.VertexSchema;
 import org.meshforge.core.mesh.MeshData;
-import org.junit.jupiter.api.Test;
 
 class MeshCollisionAdapterTest {
 

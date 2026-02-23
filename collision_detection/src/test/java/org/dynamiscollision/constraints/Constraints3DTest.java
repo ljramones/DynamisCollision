@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2026 DynamisFX Contributors
+ * Copyright 2024-2026 DynamisCollision Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,18 @@
  * limitations under the License.
  */
 
-package org.dynamiscollision;
+package org.dynamiscollision.constraints;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
-import org.vectrix.core.Vector3d;
+import org.dynamiscollision.bounds.Aabb;
+import org.dynamiscollision.broadphase.SweepAndPrune3D;
+import org.dynamiscollision.contact.ContactGenerator3D;
+import org.dynamiscollision.filtering.CollisionFilter;
+import org.dynamiscollision.world.CollisionWorld3D;
+import org.dynamiscollision.world.RigidBodyAdapter3D;
 import org.junit.jupiter.api.Test;
+import org.vectrix.core.Vector3d;
 
 class Constraints3DTest {
 
@@ -106,6 +111,41 @@ class Constraints3DTest {
         double dz = b.position.z() - a.position.z();
         double dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
         assertTrue(Math.abs(dist - 2.0) < 0.2);
+    }
+
+    @Test
+    void distanceConstraintLeavesBodiesWhenBothStatic() {
+        Body a = new Body(new Vector3d(0, 0, 0), 0.0);
+        Body b = new Body(new Vector3d(10, 0, 0), 0.0);
+        DistanceConstraint3D<Body> c = new DistanceConstraint3D<>(a, b, 1.0, 1.0);
+
+        c.solve(ADAPTER, 0.016);
+        assertEquals(0.0, a.position.x(), 1e-9);
+        assertEquals(10.0, b.position.x(), 1e-9);
+    }
+
+    @Test
+    void pointConstraintIgnoresStaticBody() {
+        Body a = new Body(new Vector3d(5, 5, 5), 0.0);
+        PointConstraint3D<Body> c = new PointConstraint3D<>(a, new Vector3d(0, 0, 0), 1.0);
+        c.solve(ADAPTER, 0.016);
+        assertEquals(5.0, a.position.x(), 1e-9);
+        assertEquals(5.0, a.position.y(), 1e-9);
+        assertEquals(5.0, a.position.z(), 1e-9);
+    }
+
+    @Test
+    void validatesConstraintConstruction() {
+        Body a = new Body(new Vector3d(0, 0, 0), 1.0);
+        Body b = new Body(new Vector3d(1, 0, 0), 1.0);
+
+        assertThrows(IllegalArgumentException.class, () -> new DistanceConstraint3D<>(null, b, 1.0, 1.0));
+        assertThrows(IllegalArgumentException.class, () -> new DistanceConstraint3D<>(a, b, -1.0, 1.0));
+        assertThrows(IllegalArgumentException.class, () -> new DistanceConstraint3D<>(a, b, 1.0, 2.0));
+
+        assertThrows(IllegalArgumentException.class, () -> new PointConstraint3D<>(null, new Vector3d(0, 0, 0), 1.0));
+        assertThrows(IllegalArgumentException.class, () -> new PointConstraint3D<>(a, null, 1.0));
+        assertThrows(IllegalArgumentException.class, () -> new PointConstraint3D<>(a, new Vector3d(0, 0, 0), -0.1));
     }
 
     private static final class Body {

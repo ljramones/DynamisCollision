@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2026 DynamisFX Contributors
+ * Copyright 2024-2026 DynamisCollision Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,14 @@
  * limitations under the License.
  */
 
-package org.dynamiscollision;
+package org.dynamiscollision.contact;
 
+import org.dynamiscollision.events.CollisionEvent;
+import org.dynamiscollision.events.CollisionEventType;
+import org.dynamiscollision.narrowphase.CollisionManifold3D;
+import org.dynamiscollision.pipeline.CollisionPair;
+import org.dynamiscollision.world.CollisionResponder3D;
+import org.dynamiscollision.world.RigidBodyAdapter3D;
 import org.vectrix.core.Vector3d;
 
 /**
@@ -173,8 +179,10 @@ public final class ContactSolver3D<T> implements CollisionResponder3D<T> {
                 clamp01(adapter.getRestitution(bodyB)));
 
         double impulseScalar = -(1.0 + restitution) * velocityAlongNormal / invMassSum;
+        double oldAccumulatedNormal = accumulatedNormal;
         accumulatedNormal = Math.max(0.0, accumulatedNormal + impulseScalar);
-        Vector3d impulse = scale(normal, impulseScalar);
+        double clampedNormalDelta = accumulatedNormal - oldAccumulatedNormal;
+        Vector3d impulse = scale(normal, clampedNormalDelta);
         velocityA = sub(velocityA, scale(impulse, invMassA));
         velocityB = add(velocityB, scale(impulse, invMassB));
 

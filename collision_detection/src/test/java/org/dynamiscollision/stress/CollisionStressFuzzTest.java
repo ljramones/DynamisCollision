@@ -109,6 +109,48 @@ class CollisionStressFuzzTest {
         });
     }
 
+    @Test
+    void capsuleContactGeneratorHandlesDegenerateSpecificCases() {
+        Optional<ContactManifold3D> pointCapsuleVsSphere = ContactGenerator3D.generate(
+                new Capsule(0, 0, 0, 0, 0, 0, 0.5),
+                new BoundingSphere(0.25, 0, 0, 0.5));
+        assertTrue(pointCapsuleVsSphere.isPresent());
+        assertValidManifold(pointCapsuleVsSphere.get().manifold(), pointCapsuleVsSphere.get());
+
+        Optional<ContactManifold3D> coaxialCapsules = ContactGenerator3D.generate(
+                new Capsule(0, 0, 0, 0, 4, 0, 0.5),
+                new Capsule(0, 3.6, 0, 0, 8, 0, 0.5));
+        assertTrue(coaxialCapsules.isPresent());
+        assertValidManifold(coaxialCapsules.get().manifold(), coaxialCapsules.get());
+
+        Optional<ContactManifold3D> coincidentCapsules = ContactGenerator3D.generate(
+                new Capsule(1, 2, 3, 4, 5, 6, 0.75),
+                new Capsule(1, 2, 3, 4, 5, 6, 0.75));
+        assertTrue(coincidentCapsules.isPresent());
+        assertValidManifold(coincidentCapsules.get().manifold(), coincidentCapsules.get());
+
+        Optional<ContactManifold3D> capsuleVsPointAabb = ContactGenerator3D.generate(
+                new Capsule(-0.3, 0, 0, -0.3, 0, 0, 0.5),
+                new Aabb(0, 0, 0, 0, 0, 0));
+        assertTrue(capsuleVsPointAabb.isPresent());
+        assertValidManifold(capsuleVsPointAabb.get().manifold(), capsuleVsPointAabb.get());
+    }
+
+    @Test
+    void randomCapsulePairsThroughContactGeneratorAlwaysFinite() {
+        assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
+            Random random = new Random(88991L);
+            for (int i = 0; i < 500; i++) {
+                Capsule a = randomCapsule(random);
+                Capsule b = randomCapsule(random);
+                Optional<ContactManifold3D> manifold = ContactGenerator3D.generate(a, b);
+                if (manifold.isPresent()) {
+                    assertValidManifold(manifold.get().manifold(), manifold.get());
+                }
+            }
+        });
+    }
+
     private static ConvexSupport3D randomSupport(Random random) {
         int type = random.nextInt(3);
         return switch (type) {
@@ -127,6 +169,17 @@ class CollisionStressFuzzTest {
                     randomRange(random, -200, 200),
                     randomRange(random, 0.01, 20.0)));
         };
+    }
+
+    private static Capsule randomCapsule(Random random) {
+        return new Capsule(
+                randomRange(random, -500, 500),
+                randomRange(random, -500, 500),
+                randomRange(random, -500, 500),
+                randomRange(random, -500, 500),
+                randomRange(random, -500, 500),
+                randomRange(random, -500, 500),
+                randomRange(random, 0.0, 25.0));
     }
 
     private static Aabb randomAabb(Random random) {

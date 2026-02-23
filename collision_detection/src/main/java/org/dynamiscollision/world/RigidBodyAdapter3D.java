@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2026 DynamisFX Contributors
+ * Copyright 2024-2026 DynamisCollision Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,30 @@
  * limitations under the License.
  */
 
-package org.dynamiscollision;
+package org.dynamiscollision.world;
 
 import org.vectrix.core.Vector3d;
 
 /**
  * Adapter for reading and writing rigid-body state from user objects.
+ *
+ * <p>This interface is also the integration boundary for animation-driven collision updates.
+ * Typical flow for character animation integration:
+ *
+ * <ol>
+ *   <li>Animation system evaluates a pose and computes world-space bone transforms.</li>
+ *   <li>Caller maps bone transforms to collision shape transforms/bounds for each body.</li>
+ *   <li>Adapter returns those world-space positions/velocities to {@link CollisionWorld3D}.</li>
+ *   <li>After collision solve, caller may consume resolved positions/velocities to drive gameplay state.</li>
+ * </ol>
+ *
+ * <p>Contract requirements:
+ * <ul>
+ *   <li>All returned vectors/scalars must be finite.</li>
+ *   <li>`getPosition`/`setPosition` and `getVelocity`/`setVelocity` must reference the same world-space frame.</li>
+ *   <li>For kinematic/animation-authored bodies, return `0` inverse mass.</li>
+ *   <li>If animation is authoritative, apply animation pose first, then run collision, then resolve final pose/state in caller code.</li>
+ * </ul>
  */
 public interface RigidBodyAdapter3D<T> {
 

@@ -2,6 +2,10 @@
 
 Collision detection library for rendering-engine integration, organized as a JDK 25 multi-module Maven project.
 
+This project is powered by:
+- `Vectrix` for vector/matrix math primitives
+- `MeshForge` for mesh/bounds integration (`MeshData` and `PackedMesh`)
+
 ## Modules
 
 - `collision_detection`: core library module for collision detection APIs.
@@ -45,9 +49,24 @@ mvn -pl collision_detection test
 mvn -pl demo -am compile
 ```
 
-## Dependency Notes
+## Current Capabilities
 
-`collision_detection` already declares:
+- Broad phase: `SpatialHash3D`, `SweepAndPrune3D`
+- Narrow phase: `Intersection3D`, `Gjk3D` (+ EPA manifold), `Sat2D`
+- Contact generation: `Aabb`, `BoundingSphere`, `Capsule` combinations
+- Collision world/runtime: filtering, event lifecycle (`ENTER/STAY/EXIT`), manifold cache, iterative response solver
+- Mesh integration: `MeshCollisionAdapter`, `PackedMeshCollisionShape`, coarse meshlet-aware raycast
+- Testing: unit, deterministic lifecycle checks, stress/fuzz invariants, benchmark smoke coverage
+
+## Known Gaps (Intentional v2 Scope)
+
+- OBB primitives
+- Triangle-level mesh narrow phase (current mesh raycast is coarse, not triangle-accurate)
+- Full conservative advancement CCD (current convex CCD is sampled + refinement)
+- Velocity-level joint constraints
+- Automatic convex decomposition
+
+## Dependency Notes
 
 ```xml
 <dependency>

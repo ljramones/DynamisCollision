@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2026 DynamisFX Contributors
+ * Copyright 2024-2026 DynamisCollision Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-package org.dynamiscollision;
+package org.dynamiscollision.world;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -27,6 +29,22 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import org.dynamiscollision.adapters.MeshCollisionAdapter;
+import org.dynamiscollision.bounds.Aabb;
+import org.dynamiscollision.broadphase.BroadPhase3D;
+import org.dynamiscollision.broadphase.SweepAndPrune3D;
+import org.dynamiscollision.constraints.Constraint3D;
+import org.dynamiscollision.contact.ContactGenerator3D;
+import org.dynamiscollision.contact.ContactManifold3D;
+import org.dynamiscollision.contact.ContactSolver3D;
+import org.dynamiscollision.contact.ManifoldCache3D;
+import org.dynamiscollision.contact.WarmStartImpulse;
+import org.dynamiscollision.events.CollisionEvent;
+import org.dynamiscollision.events.CollisionEventType;
+import org.dynamiscollision.filtering.CollisionFilter;
+import org.dynamiscollision.filtering.CollisionFiltering;
+import org.dynamiscollision.pipeline.CollisionPair;
+import org.dynamiscollision.pipeline.FilteredCollisionPair;
 import org.meshforge.core.mesh.MeshData;
 import org.meshforge.pack.buffer.PackedMesh;
 import org.vectrix.core.Vector3d;
@@ -43,7 +61,7 @@ public final class CollisionWorld3D<T> {
     private final ManifoldCache3D<T> manifoldCache = new ManifoldCache3D<>();
     private final List<Constraint3D<T>> constraints = new CopyOnWriteArrayList<>();
 
-    private final Map<CollisionPair<T>, FrameCollision> previousFrame = new HashMap<>();
+    private final Map<CollisionPair<T>, FrameCollision> previousFrame = new LinkedHashMap<>();
     private long manifoldRetentionFrames = 2;
     private int solverIterations = 1;
     private int constraintIterations = 1;
@@ -152,56 +170,9 @@ public final class CollisionWorld3D<T> {
         if (items == null) {
             throw new IllegalArgumentException("items must not be null");
         }
-
-        manifoldCache.nextFrame();
-
-        Set<CollisionPair<T>> candidates = broadPhase.findPotentialPairs(items, boundsProvider);
-        Set<FilteredCollisionPair<T>> filteredPairs = CollisionFiltering.filterPairs(candidates, filterProvider);
-
-        Map<CollisionPair<T>, FrameCollision> currentFrame = new HashMap<>();
-        for (FilteredCollisionPair<T> filtered : filteredPairs) {
-            CollisionPair<T> pair = filtered.pair();
-            Optional<ContactManifold3D> contact = narrowPhase.apply(pair.first(), pair.second());
-            if (contact.isEmpty()) {
-                continue;
-            }
-            ContactManifold3D manifold = contact.get();
-            currentFrame.put(pair, new FrameCollision(filtered.responseEnabled(), manifold));
-            manifoldCache.put(pair, manifold);
-        }
-
-        List<CollisionEvent<T>> events = new ArrayList<>();
-
-        List<CollisionEvent<T>> responseEvents = new ArrayList<>();
-        for (Map.Entry<CollisionPair<T>, FrameCollision> entry : currentFrame.entrySet()) {
-            CollisionPair<T> pair = entry.getKey();
-            FrameCollision current = entry.getValue();
-            CollisionEventType type = previousFrame.containsKey(pair) ? CollisionEventType.STAY : CollisionEventType.ENTER;
-            CollisionEvent<T> event = new CollisionEvent<>(pair, type, current.responseEnabled(), current.manifold());
-            events.add(event);
-            if (event.responseEnabled()) {
-                responseEvents.add(event);
-            }
-        }
-
-        for (Map.Entry<CollisionPair<T>, FrameCollision> entry : previousFrame.entrySet()) {
-            if (!currentFrame.containsKey(entry.getKey())) {
-                FrameCollision prior = entry.getValue();
-                events.add(new CollisionEvent<>(
-                        entry.getKey(),
-                        CollisionEventType.EXIT,
-                        prior.responseEnabled(),
-                        prior.manifold()));
-            }
-        }
-
-        previousFrame.clear();
-        previousFrame.putAll(currentFrame);
-        manifoldCache.pruneStale(manifoldRetentionFrames);
-
-        applyResponses(responseEvents);
-
-        return events;
+        FrameResult<T> frame = collectFrame(items);
+        applyResponses(frame.responseEvents());
+        return frame.events();
     }
 
     public List<CollisionEvent<T>> step(Collection<T> items, double dtSeconds) {
@@ -228,17 +199,7 @@ public final class CollisionWorld3D<T> {
                     v.z() + gravity.z() * dtSeconds));
         }
 
-        // 2) solve constraints
-        for (int i = 0; i < constraintIterations; i++) {
-            for (Constraint3D<T> constraint : constraints) {
-                constraint.solve(bodyAdapter, dtSeconds);
-            }
-        }
-
-        // 3) solve collisions at current predicted state
-        List<CollisionEvent<T>> events = update(items);
-
-        // 4) integrate positions
+        // 2) predict positions for collision detection
         for (T body : items) {
             double invMass = Math.max(0.0, bodyAdapter.getInverseMass(body));
             if (invMass <= 0.0) {
@@ -251,7 +212,18 @@ public final class CollisionWorld3D<T> {
                     p.y() + v.y() * dtSeconds,
                     p.z() + v.z() * dtSeconds));
         }
-        return events;
+
+        // 3) detect collisions on predicted state
+        FrameResult<T> frame = collectFrame(items);
+
+        // 4) solve constraints and contacts
+        for (int i = 0; i < constraintIterations; i++) {
+            for (Constraint3D<T> constraint : constraints) {
+                constraint.solve(bodyAdapter, dtSeconds);
+            }
+        }
+        applyResponses(frame.responseEvents());
+        return frame.events();
     }
 
     @SuppressWarnings("unchecked")
@@ -259,9 +231,9 @@ public final class CollisionWorld3D<T> {
         if (responder == null || responseEvents.isEmpty()) {
             return;
         }
-
-        responseEvents.sort(Comparator.comparing(event ->
-                String.valueOf(event.pair().first()) + "|" + String.valueOf(event.pair().second())));
+        Map<Object, Integer> identityOrder = new IdentityHashMap<>();
+        int[] nextIdentityOrder = new int[] {1};
+        responseEvents.sort(Comparator.comparingLong(event -> stablePairKey(event.pair(), identityOrder, nextIdentityOrder)));
 
         if (responder instanceof ContactSolver3D<?> anySolver) {
             ContactSolver3D<T> solver = (ContactSolver3D<T>) anySolver;
@@ -287,6 +259,69 @@ public final class CollisionWorld3D<T> {
         for (CollisionEvent<T> event : responseEvents) {
             responder.resolve(event);
         }
+    }
+
+    private FrameResult<T> collectFrame(Collection<T> items) {
+        manifoldCache.nextFrame();
+
+        Set<CollisionPair<T>> candidates = broadPhase.findPotentialPairs(items, boundsProvider);
+        Set<FilteredCollisionPair<T>> filteredPairs = CollisionFiltering.filterPairs(candidates, filterProvider);
+
+        Map<CollisionPair<T>, FrameCollision> currentFrame = new LinkedHashMap<>();
+        for (FilteredCollisionPair<T> filtered : filteredPairs) {
+            CollisionPair<T> pair = filtered.pair();
+            Optional<ContactManifold3D> contact = narrowPhase.apply(pair.first(), pair.second());
+            if (contact.isEmpty()) {
+                continue;
+            }
+            ContactManifold3D manifold = contact.get();
+            currentFrame.put(pair, new FrameCollision(filtered.responseEnabled(), manifold));
+            manifoldCache.put(pair, manifold);
+        }
+
+        List<CollisionEvent<T>> events = new ArrayList<>();
+        List<CollisionEvent<T>> responseEvents = new ArrayList<>();
+
+        for (Map.Entry<CollisionPair<T>, FrameCollision> entry : currentFrame.entrySet()) {
+            CollisionPair<T> pair = entry.getKey();
+            FrameCollision current = entry.getValue();
+            CollisionEventType type = previousFrame.containsKey(pair) ? CollisionEventType.STAY : CollisionEventType.ENTER;
+            CollisionEvent<T> event = new CollisionEvent<>(pair, type, current.responseEnabled(), current.manifold());
+            events.add(event);
+            if (event.responseEnabled()) {
+                responseEvents.add(event);
+            }
+        }
+
+        for (Map.Entry<CollisionPair<T>, FrameCollision> entry : previousFrame.entrySet()) {
+            if (!currentFrame.containsKey(entry.getKey())) {
+                FrameCollision prior = entry.getValue();
+                events.add(new CollisionEvent<>(
+                        entry.getKey(),
+                        CollisionEventType.EXIT,
+                        prior.responseEnabled(),
+                        prior.manifold()));
+            }
+        }
+
+        previousFrame.clear();
+        previousFrame.putAll(currentFrame);
+        manifoldCache.pruneStale(manifoldRetentionFrames);
+        return new FrameResult<>(events, responseEvents);
+    }
+
+    private static <T> long stablePairKey(
+            CollisionPair<T> pair,
+            Map<Object, Integer> identityOrder,
+            int[] nextIdentityOrder) {
+        int firstOrder = identityOrder.computeIfAbsent(pair.first(), ignored -> nextIdentityOrder[0]++);
+        int secondOrder = identityOrder.computeIfAbsent(pair.second(), ignored -> nextIdentityOrder[0]++);
+        int low = Math.min(firstOrder, secondOrder);
+        int high = Math.max(firstOrder, secondOrder);
+        return (((long) low) << 32) | (high & 0xFFFFFFFFL);
+    }
+
+    private record FrameResult<T>(List<CollisionEvent<T>> events, List<CollisionEvent<T>> responseEvents) {
     }
 
     private record FrameCollision(boolean responseEnabled, ContactManifold3D manifold) {

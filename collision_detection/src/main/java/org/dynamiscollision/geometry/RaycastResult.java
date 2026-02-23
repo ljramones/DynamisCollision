@@ -14,16 +14,26 @@
  * limitations under the License.
  */
 
-package org.dynamiscollision.world;
+package org.dynamiscollision.geometry;
 
-import org.dynamiscollision.events.CollisionEvent;
-
+import org.vectrix.core.Vector3d;
 
 /**
- * Optional collision-world response hook executed for response-enabled contacts.
+ * Coarse ray hit result with optional meshlet/triangle metadata.
  */
-@FunctionalInterface
-public interface CollisionResponder3D<T> {
+public record RaycastResult(
+        double t,
+        Vector3d point,
+        Vector3d normal,
+        int meshletIndex,
+        int triangleIndex) {
 
-    void resolve(CollisionEvent<T> event);
+    public RaycastResult {
+        if (!Double.isFinite(t) || t < 0.0) {
+            throw new IllegalArgumentException("t must be finite and >= 0");
+        }
+        if (point == null || normal == null) {
+            throw new IllegalArgumentException("point and normal must not be null");
+        }
+    }
 }

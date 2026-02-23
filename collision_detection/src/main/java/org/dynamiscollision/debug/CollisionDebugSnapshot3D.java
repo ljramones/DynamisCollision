@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2026 DynamisFX Contributors
+ * Copyright 2024-2026 DynamisCollision Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,18 @@
  * limitations under the License.
  */
 
-package org.dynamiscollision;
+package org.dynamiscollision.debug;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
+import org.dynamiscollision.bounds.Aabb;
+import org.dynamiscollision.contact.ContactPoint3D;
+import org.dynamiscollision.events.CollisionEvent;
+import org.dynamiscollision.events.CollisionEventType;
+import org.dynamiscollision.narrowphase.CollisionManifold3D;
+import org.dynamiscollision.pipeline.CollisionPair;
 
 /**
  * Builds a frame snapshot that can be used by debug overlays and diagnostics.

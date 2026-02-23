@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2026 DynamisFX Contributors
+ * Copyright 2024-2026 DynamisCollision Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package org.dynamiscollision;
+package org.dynamiscollision.narrowphase;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.OptionalDouble;
-import org.vectrix.core.Vector3d;
+import org.dynamiscollision.bounds.Aabb;
 import org.junit.jupiter.api.Test;
+import org.vectrix.core.Vector3d;
 
 class Ccd3DTest {
 

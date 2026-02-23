@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2026 DynamisFX Contributors
+ * Copyright 2024-2026 DynamisCollision Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-package org.dynamiscollision;
+package org.dynamiscollision.narrowphase;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.OptionalDouble;
+import org.dynamiscollision.bounds.Aabb;
+import org.dynamiscollision.bounds.BoundingSphere;
+import org.dynamiscollision.bounds.Capsule;
+import org.dynamiscollision.geometry.Ray3D;
 import org.junit.jupiter.api.Test;
 
 class Intersection3DTest {
@@ -82,5 +84,37 @@ class Intersection3DTest {
 
         assertTrue(Intersection3D.rayAabbIntersectionDistance(ray, box).isEmpty());
         assertFalse(Intersection3D.intersects(ray, box));
+    }
+
+    @Test
+    void capsuleSphereChecksUseSegmentDistance() {
+        Capsule capsule = new Capsule(0, 0, 0, 0, 2, 0, 0.5);
+        BoundingSphere touching = new BoundingSphere(0.9, 1.0, 0.0, 0.4);
+        BoundingSphere separated = new BoundingSphere(2.0, 1.0, 0.0, 0.4);
+
+        assertTrue(Intersection3D.intersects(capsule, touching));
+        assertFalse(Intersection3D.intersects(capsule, separated));
+        assertTrue(Intersection3D.intersects(touching, capsule));
+    }
+
+    @Test
+    void capsuleAabbChecksAreSupported() {
+        Capsule near = new Capsule(0.2, -1, 0.2, 0.2, 2, 0.2, 0.2);
+        Capsule far = new Capsule(2.0, -1, 2.0, 2.0, 2.0, 2.0, 0.2);
+        Aabb box = new Aabb(0, 0, 0, 1, 1, 1);
+
+        assertTrue(Intersection3D.intersects(near, box));
+        assertFalse(Intersection3D.intersects(far, box));
+        assertTrue(Intersection3D.intersects(box, near));
+    }
+
+    @Test
+    void capsuleCapsuleChecksSupportTouchingAndSeparation() {
+        Capsule a = new Capsule(0, 0, 0, 0, 2, 0, 0.5);
+        Capsule b = new Capsule(0.9, 0, 0, 0.9, 2, 0, 0.4);
+        Capsule c = new Capsule(2.0, 0, 0, 2.0, 2, 0, 0.4);
+
+        assertTrue(Intersection3D.intersects(a, b));
+        assertFalse(Intersection3D.intersects(a, c));
     }
 }

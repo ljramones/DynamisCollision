@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2026 DynamisFX Contributors
+ * Copyright 2024-2026 DynamisCollision Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package org.dynamiscollision;
+package org.dynamiscollision.bounds;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
+import org.dynamiscollision.geometry.Ray3D;
 import org.junit.jupiter.api.Test;
 
 class AabbAndSphereValidationTest {
@@ -33,6 +33,11 @@ class AabbAndSphereValidationTest {
     @Test
     void sphereRequiresNonNegativeRadius() {
         assertThrows(IllegalArgumentException.class, () -> new BoundingSphere(0, 0, 0, -0.001));
+    }
+
+    @Test
+    void capsuleRequiresNonNegativeRadius() {
+        assertThrows(IllegalArgumentException.class, () -> new Capsule(0, 0, 0, 1, 1, 1, -0.001));
     }
 
     @Test

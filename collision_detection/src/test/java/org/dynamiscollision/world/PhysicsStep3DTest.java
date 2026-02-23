@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2026 DynamisFX Contributors
+ * Copyright 2024-2026 DynamisCollision Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package org.dynamiscollision;
+package org.dynamiscollision.world;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
@@ -40,6 +41,27 @@ class PhysicsStep3DTest {
         int totalA = runSequence(deltas);
         int totalB = runSequence(deltas);
         assertEquals(totalA, totalB);
+    }
+
+    @Test
+    void clampsAccumulatorWhenHittingMaxSubsteps() {
+        PhysicsStep3D stepper = new PhysicsStep3D(0.01, 2);
+        int steps = stepper.advance(0.20, dt -> {
+        });
+        assertEquals(2, steps);
+        assertEquals(0.02, stepper.accumulatorSeconds(), 1e-9);
+    }
+
+    @Test
+    void validatesConfigurationAndInputs() {
+        assertThrows(IllegalArgumentException.class, () -> new PhysicsStep3D(0.0, 1));
+        assertThrows(IllegalArgumentException.class, () -> new PhysicsStep3D(0.01, 0));
+
+        PhysicsStep3D stepper = new PhysicsStep3D(0.01, 1);
+        assertThrows(IllegalArgumentException.class, () -> stepper.setMaxSubsteps(0));
+        assertThrows(IllegalArgumentException.class, () -> stepper.advance(-0.1, dt -> {
+        }));
+        assertThrows(IllegalArgumentException.class, () -> stepper.advance(0.01, null));
     }
 
     private static int runSequence(double[] deltas) {

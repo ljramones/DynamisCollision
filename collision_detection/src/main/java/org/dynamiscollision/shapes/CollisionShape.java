@@ -14,16 +14,25 @@
  * limitations under the License.
  */
 
-package org.dynamiscollision.world;
+package org.dynamiscollision.shapes;
 
-import org.dynamiscollision.events.CollisionEvent;
-
+import org.dynamiscollision.bounds.Aabb;
+import org.dynamiscollision.geometry.Ray3D;
+import org.dynamiscollision.geometry.RaycastResult;
+import org.vectrix.affine.Transformf;
 
 /**
- * Optional collision-world response hook executed for response-enabled contacts.
+ * Generic collidable shape contract for world-space bounds and coarse ray tests.
  */
-@FunctionalInterface
-public interface CollisionResponder3D<T> {
+public interface CollisionShape {
 
-    void resolve(CollisionEvent<T> event);
+    /**
+     * Returns world-space bounds for this shape using the provided world transform.
+     */
+    Aabb getWorldBounds(Transformf worldTransform);
+
+    /**
+     * Coarse ray query for this shape.
+     */
+    java.util.Optional<RaycastResult> raycast(Ray3D ray, Transformf worldTransform);
 }

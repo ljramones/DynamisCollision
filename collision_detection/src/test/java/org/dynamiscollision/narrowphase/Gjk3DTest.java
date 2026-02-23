@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2026 DynamisFX Contributors
+ * Copyright 2024-2026 DynamisCollision Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 
-package org.dynamiscollision;
+package org.dynamiscollision.narrowphase;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.List;
-import org.vectrix.core.Vector3d;
+import org.dynamiscollision.bounds.Aabb;
+import org.dynamiscollision.bounds.BoundingSphere;
+import org.dynamiscollision.bounds.Capsule;
 import org.junit.jupiter.api.Test;
+import org.vectrix.core.Vector3d;
 
 class Gjk3DTest {
 
@@ -91,6 +92,16 @@ class Gjk3DTest {
         ConvexSupport3D a = Gjk3D.fromAabb(new Aabb(0, 0, 0, 1, 1, 1));
         ConvexSupport3D b = Gjk3D.fromAabb(new Aabb(10, 10, 10, 11, 11, 11));
         assertTrue(Gjk3D.intersectsWithManifold(a, b).isEmpty());
+    }
+
+    @Test
+    void supportsCapsulesForGjkQueries() {
+        ConvexSupport3D capsule = Gjk3D.fromCapsule(new Capsule(0, -1, 0, 0, 1, 0, 0.5));
+        ConvexSupport3D nearBox = Gjk3D.fromAabb(new Aabb(0.3, -0.25, -0.25, 2, 0.25, 0.25));
+        ConvexSupport3D farBox = Gjk3D.fromAabb(new Aabb(3, 3, 3, 4, 4, 4));
+
+        assertTrue(Gjk3D.intersects(capsule, nearBox));
+        assertFalse(Gjk3D.intersects(capsule, farBox));
     }
 
     private static ConvexSupport3D pointCloudSupport(List<Vector3d> points) {

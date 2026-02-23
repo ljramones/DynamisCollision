@@ -18,24 +18,33 @@ package org.dynamiscollision.bounds;
 
 import org.dynamiscollision.narrowphase.Intersection3D;
 
-
 /**
- * Immutable bounding sphere in 3D.
+ * Immutable capsule in 3D defined by segment endpoints and radius.
  */
-public record BoundingSphere(
-        double centerX,
-        double centerY,
-        double centerZ,
+public record Capsule(
+        double pointAX,
+        double pointAY,
+        double pointAZ,
+        double pointBX,
+        double pointBY,
+        double pointBZ,
         double radius) {
 
-    public BoundingSphere {
-        validateFinite(centerX, "centerX");
-        validateFinite(centerY, "centerY");
-        validateFinite(centerZ, "centerZ");
+    public Capsule {
+        validateFinite(pointAX, "pointAX");
+        validateFinite(pointAY, "pointAY");
+        validateFinite(pointAZ, "pointAZ");
+        validateFinite(pointBX, "pointBX");
+        validateFinite(pointBY, "pointBY");
+        validateFinite(pointBZ, "pointBZ");
         validateFinite(radius, "radius");
         if (radius < 0.0) {
             throw new IllegalArgumentException("radius must be >= 0");
         }
+    }
+
+    public boolean intersects(Capsule other) {
+        return Intersection3D.intersects(this, other);
     }
 
     public boolean intersects(BoundingSphere other) {
@@ -44,16 +53,6 @@ public record BoundingSphere(
 
     public boolean intersects(Aabb other) {
         return Intersection3D.intersects(this, other);
-    }
-
-    public Aabb toAabb() {
-        return new Aabb(
-                centerX - radius,
-                centerY - radius,
-                centerZ - radius,
-                centerX + radius,
-                centerY + radius,
-                centerZ + radius);
     }
 
     private static void validateFinite(double value, String name) {

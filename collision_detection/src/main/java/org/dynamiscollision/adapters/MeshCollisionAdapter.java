@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2026 DynamisFX Contributors
+ * Copyright 2024-2026 DynamisCollision Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-package org.dynamiscollision;
+package org.dynamiscollision.adapters;
 
 import java.util.Map;
 import java.util.WeakHashMap;
+import org.dynamiscollision.bounds.Aabb;
+import org.dynamiscollision.filtering.CollisionFilter;
 import org.meshforge.core.bounds.Boundsf;
 import org.meshforge.core.bounds.Spheref;
 import org.meshforge.core.mesh.MeshData;

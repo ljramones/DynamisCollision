@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2026 DynamisFX Contributors
+ * Copyright 2024-2026 DynamisCollision Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package org.dynamiscollision;
+package org.dynamiscollision.contact;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.List;
+import org.dynamiscollision.narrowphase.CollisionManifold3D;
+import org.dynamiscollision.pipeline.CollisionPair;
 import org.junit.jupiter.api.Test;
 
 class ManifoldCache3DTest {

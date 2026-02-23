@@ -7,6 +7,7 @@ Implemented primitives and utilities:
 - `BroadPhase3D<T>`: broad-phase strategy interface
 - `Aabb`: immutable axis-aligned bounding box
 - `BoundingSphere`: immutable sphere bounds
+- `Capsule`: immutable capsule (segment endpoints + radius)
 - `Ray3D`: immutable ray (origin + direction)
 - `Intersection3D`: primitive intersection checks
 - `SpatialHash3D<T>`: broad-phase candidate pair generation
@@ -28,7 +29,7 @@ Implemented primitives and utilities:
 - `CollisionFilter`: layer/mask + behavior filter
 - `CollisionFiltering`: filter + classify candidate pairs
 - `FilteredCollisionPair<T>`: pair annotated with response flag
-- `NodeCollisionAdapter`: JavaFX `Node` bounds/filter adapter hooks
+- `MeshCollisionAdapter`: MeshForge `MeshData`/`PackedMesh` bounds/filter adapter hooks
 - `CollisionEventType`: `ENTER`, `STAY`, `EXIT`
 - `CollisionEvent<T>`: per-frame event payload
 - `CollisionWorld3D<T>`: orchestration loop for broad-phase/filter/narrow-phase/cache/events
@@ -42,12 +43,18 @@ Implemented primitives and utilities:
 - `ContactSolver3D<T>`: basic positional + impulse response solver
 - `Ccd3D`: continuous collision detection helpers (time-of-impact)
 - `CollisionPipeline`: applies narrow-phase tests to broad-phase candidates
+- `CollisionShape`: common shape contract for bounds + ray queries
+- `PackedMeshCollisionShape`: MeshForge-native collision shape with meshlet-aware coarse raycast
+- `RaycastResult`: coarse hit payload (`t`, point, normal, meshlet/triangle indices)
 
 ## Implemented Checks
 
 - `Aabb` vs `Aabb`
 - `BoundingSphere` vs `BoundingSphere`
 - `BoundingSphere` vs `Aabb`
+- `Capsule` vs `Capsule`
+- `Capsule` vs `BoundingSphere`
+- `Capsule` vs `Aabb`
 - `Ray3D` vs `Aabb` with hit distance (`OptionalDouble`)
 - `ConvexPolygon2D` vs `ConvexPolygon2D` via SAT (2D)
 
@@ -69,6 +76,9 @@ Use `CollisionPipeline` to filter broad-phase candidate pairs with narrow-phase 
 - `ContactGenerator3D` currently provides explicit contact points for:
     - `Aabb` vs `Aabb`
     - `BoundingSphere` vs `BoundingSphere`
+    - `Capsule` vs `Capsule`
+    - `Capsule` vs `BoundingSphere`
+    - `Capsule` vs `Aabb`
 
 ## CCD Behavior
 
@@ -88,10 +98,10 @@ Use `CollisionPipeline` to filter broad-phase candidate pairs with narrow-phase 
 
 - `CollisionFilter` provides layer/mask checks and `SOLID`/`TRIGGER` behavior.
 - `CollisionFiltering.filterPairs(...)` filters broad-phase pairs and annotates response eligibility.
-- `NodeCollisionAdapter` exposes:
-    - `boundsInParent(Node)` -> `Aabb`
-    - `setFilter(Node, CollisionFilter)`
-    - `getFilter(Node)` with defaults/property fallback
+- `MeshCollisionAdapter` exposes:
+    - `bounds(MeshData)` / `bounds(PackedMesh)` -> `Aabb`
+    - `setBounds(MeshData, Aabb)` / `setBounds(PackedMesh, Aabb)`
+    - `setFilter(...)` and `getFilter(...)` with default fallback
 
 ## Collision World Orchestration
 
@@ -101,9 +111,14 @@ Use `CollisionPipeline` to filter broad-phase candidate pairs with narrow-phase 
     - narrow-phase contact generation
     - manifold cache update/pruning
     - event generation (`ENTER`, `STAY`, `EXIT`)
-- JavaFX convenience factories:
-    - `CollisionWorld3D.forJavaFxNodes(...)`
-    - `CollisionWorld3D.forJavaFxNodesDefault()`
+- Mesh convenience factories:
+    - `CollisionWorld3D.forMeshData(...)`
+    - `CollisionWorld3D.forMeshDataDefault()`
+    - `CollisionWorld3D.forPackedMeshes(...)`
+    - `CollisionWorld3D.forPackedMeshesDefault()`
+- Mesh shape APIs:
+    - `PackedMeshCollisionShape.getWorldBounds(...)`
+    - `PackedMeshCollisionShape.raycast(...)` (meshlet AABB + cone coarse pass, triangle pass pending)
 - Optional response hook:
     - `CollisionWorld3D.setResponder(CollisionResponder3D<T>)`
     - `ContactSolver3D<T>` can be used as the responder.
@@ -116,9 +131,9 @@ Use `CollisionPipeline` to filter broad-phase candidate pairs with narrow-phase 
 - Physics stepping API:
     - `CollisionWorld3D.step(items, dtSeconds)`:
         - integrate velocities (gravity)
-        - solve constraints
-        - run collision detection/response
-        - integrate positions
+        - predict positions
+        - run collision detection on predicted state
+        - solve constraints and collision response
 
 ## Debugging and Visualization
 
@@ -134,36 +149,29 @@ Use `CollisionPipeline` to filter broad-phase candidate pairs with narrow-phase 
         - `D` toggle debug overlay
         - `SPACE` pause/resume simulation
 
-## Demo Coverage (DynamisFX-Demo)
+## Demo Coverage
 
-Sampler divisions in `DynamisFX-Client` route collision demos into:
-
-- `Collision Detection`
-- `Collision Detection Solver`
-- `Pipeline Physics`
-
-Implemented demos currently include:
-
-- `BroadPhaseComparisonDemo` (spatial hash vs sweep-and-prune, stats overlays)
-- `GjkEpaVisualizerDemo` (GJK simplex and EPA penetration visualization)
-- `Sat2dPolygonPlaygroundDemo` (2D SAT axes and MTV behavior)
-- `CcdTunnelingDemo` (discrete vs swept vs CCD TOI behavior)
-- `ContactSolverStackingDemo` (solver iterations, warm start, friction/baumgarte tuning)
-- `RayCastingSceneDemo` (single ray/flashlight, brute force vs broad-phase culling)
-- `CollisionFilterLayerDemo` (layer matrix filtering with pair counters)
-- `BoundingVolumeComparisonDemo` (AABB vs sphere vs convex/GJK comparison)
-- `CollisionPipelineMonitorDemo` (broad/filter/narrow/manifold flow monitoring)
-- `MixedPrimitiveStressTestDemo` (AABB/AABB, sphere/sphere, sphere/AABB cost mix)
-- `ManifoldPersistenceVisualizerDemo` (contact age and warm-start persistence)
+This repository includes a `demo` module intended for integration/visualization experiments.
+Specific sample class names are not maintained in this document; treat this section as a
+high-level note that demo scenarios should cover broad-phase behavior, narrow-phase correctness,
+filtering, solver behavior, and ray queries.
 
 ## Benchmark Harness
 
-`DynamisFX-Core/src/test/java/org/dynamisfx/collision/broadphase/BroadPhase3DBenchmark.java` provides a simple runtime comparison for:
+`collision_detection/src/test/java/org/dynamiscollision/broadphase/BroadPhase3DBenchmark.java`
+provides a simple runtime comparison for:
 
 - `SpatialHash3D`
 - `SweepAndPrune3D`
 
 It is intended for local tuning/regression checks (not as a strict microbenchmark framework).
+
+Additional benchmark-smoke coverage is in:
+
+- `collision_detection/src/test/java/org/dynamiscollision/benchmark/CollisionBenchmarkSmokeTest.java`
+  - broad phase at 100/500/1000 objects (fixed seed)
+  - GJK random-pair throughput smoke
+  - world-step throughput smoke
 
 ## Current Shortcomings (Intentional v1)
 
@@ -173,13 +181,14 @@ It is intended for local tuning/regression checks (not as a strict microbenchmar
 - No automatic shape decomposition or mesh-to-convex conversion pipeline
 - SAT support is currently 2D and convex-only (concave requires decomposition)
 - Convex-convex CCD is currently approximate (sampled + bisection), not full conservative advancement.
+- No conservative advancement CCD implementation yet.
 - Contact generation is currently primitive-focused; generic GJK/EPA contact point generation is not yet implemented.
 - Solver is baseline iterative (position/velocity split with warm-start), not a full production constraint/stacking solver.
 - Constraints are currently positional constraints only (no dedicated velocity-level joint constraints).
 
 ## Testing
 
-Coverage added in `DynamisFX-Core`:
+Coverage in this module:
 
 - `AabbAndSphereValidationTest`
 - `Intersection3DTest`
@@ -193,8 +202,9 @@ Coverage added in `DynamisFX-Core`:
 - `ContactGenerator3DTest`
 - `ManifoldCache3DTest`
 - `CollisionFilteringTest`
-- `NodeCollisionAdapterTest`
+- `MeshCollisionAdapterTest`
 - `CollisionWorld3DTest`
+- `PackedMeshCollisionShapeTest`
 - `CollisionDebugSnapshot3DTest`
 - `ContactSolver3DTest`
 - `PhysicsStep3DTest`

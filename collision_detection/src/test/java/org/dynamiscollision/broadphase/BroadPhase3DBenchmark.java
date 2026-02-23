@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2026 DynamisFX Contributors
+ * Copyright 2024-2026 DynamisCollision Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-package org.dynamiscollision;
+package org.dynamiscollision.broadphase;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.function.Function;
+import org.dynamiscollision.bounds.Aabb;
+import org.dynamiscollision.pipeline.CollisionPair;
 
 /**
  * Lightweight benchmark harness for broad-phase candidate generation.

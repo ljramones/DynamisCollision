@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2026 DynamisFX Contributors
+ * Copyright 2024-2026 DynamisCollision Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,14 @@
  * limitations under the License.
  */
 
-package org.dynamiscollision;
+package org.dynamiscollision.narrowphase;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import org.dynamiscollision.bounds.Aabb;
+import org.dynamiscollision.bounds.BoundingSphere;
+import org.dynamiscollision.bounds.Capsule;
 import org.vectrix.core.Vector3d;
 
 /**
@@ -83,6 +86,33 @@ public final class Gjk3D {
                     sphere.centerX() + dir.x() * sphere.radius(),
                     sphere.centerY() + dir.y() * sphere.radius(),
                     sphere.centerZ() + dir.z() * sphere.radius());
+        };
+    }
+
+    public static ConvexSupport3D fromCapsule(Capsule capsule) {
+        if (capsule == null) {
+            throw new IllegalArgumentException("capsule must not be null");
+        }
+        return direction -> {
+            Vec3 dir = Vec3.from(direction);
+            if (dir.isNearZero()) {
+                dir = new Vec3(1.0, 0.0, 0.0);
+            } else {
+                dir = dir.normalized();
+            }
+
+            double dotA = capsule.pointAX() * dir.x() + capsule.pointAY() * dir.y() + capsule.pointAZ() * dir.z();
+            double dotB = capsule.pointBX() * dir.x() + capsule.pointBY() * dir.y() + capsule.pointBZ() * dir.z();
+            if (dotA >= dotB) {
+                return new Vector3d(
+                        capsule.pointAX() + dir.x() * capsule.radius(),
+                        capsule.pointAY() + dir.y() * capsule.radius(),
+                        capsule.pointAZ() + dir.z() * capsule.radius());
+            }
+            return new Vector3d(
+                    capsule.pointBX() + dir.x() * capsule.radius(),
+                    capsule.pointBY() + dir.y() * capsule.radius(),
+                    capsule.pointBZ() + dir.z() * capsule.radius());
         };
     }
 
