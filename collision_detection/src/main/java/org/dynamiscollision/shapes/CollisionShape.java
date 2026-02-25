@@ -16,6 +16,8 @@
 
 package org.dynamiscollision.shapes;
 
+import java.util.List;
+import java.util.Optional;
 import org.dynamiscollision.bounds.Aabb;
 import org.dynamiscollision.geometry.Ray3D;
 import org.dynamiscollision.geometry.RaycastResult;
@@ -34,5 +36,62 @@ public interface CollisionShape {
     /**
      * Coarse ray query for this shape.
      */
-    java.util.Optional<RaycastResult> raycast(Ray3D ray, Transformf worldTransform);
+    Optional<RaycastResult> raycast(Ray3D ray, Transformf worldTransform);
+
+    /**
+     * Typed shape discriminator used by backend adapters.
+     */
+    ShapeType shapeType();
+
+    static CollisionShape sphere(float radius) {
+        return new SphereCollisionShape(radius);
+    }
+
+    static CollisionShape box(float halfX, float halfY, float halfZ) {
+        return new BoxCollisionShape(halfX, halfY, halfZ);
+    }
+
+    static CollisionShape capsule(float radius, float height) {
+        return new CapsuleCollisionShape(radius, height);
+    }
+
+    static CollisionShape cylinder(float radius, float height) {
+        return new CylinderCollisionShape(radius, height);
+    }
+
+    static CollisionShape plane(float nx, float ny, float nz, float d) {
+        return new PlaneCollisionShape(nx, ny, nz, d);
+    }
+
+    static CollisionShape planeY() {
+        return new PlaneCollisionShape(0f, 1f, 0f, 0f);
+    }
+
+    static CollisionShape convexHull(float[] vertices, int[] indices) {
+        return new ConvexHullCollisionShape(vertices, indices);
+    }
+
+    static CollisionShape triangleMesh(float[] vertices, int[] indices) {
+        return new TriangleMeshCollisionShape(vertices, indices);
+    }
+
+    static CollisionShape heightfield(
+            float[] heights,
+            int widthSamples,
+            int depthSamples,
+            float worldWidth,
+            float worldDepth,
+            float maxHeight) {
+        return new HeightfieldCollisionShape(
+                heights,
+                widthSamples,
+                depthSamples,
+                worldWidth,
+                worldDepth,
+                maxHeight);
+    }
+
+    static CollisionShape compound(List<CollisionShape> children, List<Transformf> localTransforms) {
+        return new CompoundCollisionShape(children, localTransforms);
+    }
 }

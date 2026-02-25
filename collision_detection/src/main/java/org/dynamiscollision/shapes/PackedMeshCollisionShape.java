@@ -37,6 +37,12 @@ import org.vectrix.core.Vector3f;
  */
 public final class PackedMeshCollisionShape implements CollisionShape {
 
+    
+    public ShapeType shapeType() {
+        return ShapeType.TRIANGLE_MESH;
+    }
+
+
     private final PackedMesh mesh;
     private final Transformf localTransform;
 

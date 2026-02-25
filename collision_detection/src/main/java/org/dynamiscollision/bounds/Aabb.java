@@ -42,6 +42,33 @@ public record Aabb(
         }
     }
 
+    public static Aabb empty() {
+        return new Aabb(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+    }
+
+    public static Aabb infinite() {
+        return new Aabb(
+                -Double.MAX_VALUE,
+                -Double.MAX_VALUE,
+                -Double.MAX_VALUE,
+                Double.MAX_VALUE,
+                Double.MAX_VALUE,
+                Double.MAX_VALUE);
+    }
+
+    public Aabb union(Aabb other) {
+        if (other == null) {
+            return this;
+        }
+        return new Aabb(
+                Math.min(minX, other.minX()),
+                Math.min(minY, other.minY()),
+                Math.min(minZ, other.minZ()),
+                Math.max(maxX, other.maxX()),
+                Math.max(maxY, other.maxY()),
+                Math.max(maxZ, other.maxZ()));
+    }
+
     public static Aabb fromAabbf(Aabbf bounds) {
         if (bounds == null) {
             throw new IllegalArgumentException("bounds must not be null");
