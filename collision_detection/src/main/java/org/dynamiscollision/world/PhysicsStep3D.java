@@ -20,7 +20,11 @@ import java.util.function.DoubleConsumer;
 
 /**
  * Fixed-timestep accumulator utility for deterministic stepping.
+ *
+ * <p>Transitional compatibility utility. Deterministic simulation stepping authority should reside
+ * in Physics-owned runtime paths.
  */
+@Deprecated(since = "0.1.0", forRemoval = false)
 public final class PhysicsStep3D {
 
     private final double fixedDtSeconds;

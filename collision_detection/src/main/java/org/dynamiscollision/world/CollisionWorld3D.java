@@ -175,6 +175,13 @@ public final class CollisionWorld3D<T> {
         return frame.events();
     }
 
+    /**
+     * Transitional simulation-stepping path retained for compatibility.
+     *
+     * <p>Authority target is Physics-owned stepping/resolution. Collision should remain
+     * detection/query substrate authority.
+     */
+    @Deprecated(since = "0.1.0", forRemoval = false)
     public List<CollisionEvent<T>> step(Collection<T> items, double dtSeconds) {
         if (items == null) {
             throw new IllegalArgumentException("items must not be null");

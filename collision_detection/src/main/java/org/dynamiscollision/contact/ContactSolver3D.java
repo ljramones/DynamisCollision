@@ -26,7 +26,11 @@ import org.vectrix.core.Vector3d;
 
 /**
  * Basic position/velocity response solver for collision contacts.
+ *
+ * <p>Transitional compatibility implementation. Contact resolution authority is targeted to
+ * Physics-owned simulation paths; Collision should remain detection/query substrate.
  */
+@Deprecated(since = "0.1.0", forRemoval = false)
 public final class ContactSolver3D<T> implements CollisionResponder3D<T> {
 
     private final RigidBodyAdapter3D<T> adapter;
