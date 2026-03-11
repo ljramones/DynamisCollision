@@ -21,8 +21,18 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.dynamisphysics</groupId>
+      <artifactId>dynamisphysics-api</artifactId>
+      <version>0.3.1-SNAPSHOT</version>
+    </dependency>
+    <dependency>
       <groupId>org.meshforge</groupId>
       <artifactId>meshforge</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>
