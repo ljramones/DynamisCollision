@@ -66,6 +66,8 @@ public final class CollisionWorld3D<T> {
     private int solverIterations = 1;
     private int constraintIterations = 1;
     private CollisionResponder3D<T> responder;
+    private CollisionResponsePathPolicy3D<T> responsePathPolicy =
+            (candidateResponder, events) -> candidateResponder instanceof ContactSolver3D<?>;
     private RigidBodyAdapter3D<T> bodyAdapter;
     private Vector3d gravity = new Vector3d(0.0, 0.0, 0.0);
 
@@ -124,6 +126,13 @@ public final class CollisionWorld3D<T> {
 
     public void setResponder(CollisionResponder3D<T> responder) {
         this.responder = responder;
+    }
+
+    public void setResponsePathPolicy(CollisionResponsePathPolicy3D<T> responsePathPolicy) {
+        if (responsePathPolicy == null) {
+            throw new IllegalArgumentException("responsePathPolicy must not be null");
+        }
+        this.responsePathPolicy = responsePathPolicy;
     }
 
     public void setSolverIterations(int solverIterations) {
@@ -242,7 +251,8 @@ public final class CollisionWorld3D<T> {
         int[] nextIdentityOrder = new int[] {1};
         responseEvents.sort(Comparator.comparingLong(event -> stablePairKey(event.pair(), identityOrder, nextIdentityOrder)));
 
-        if (responder instanceof ContactSolver3D<?> anySolver) {
+        if (responsePathPolicy.useLegacyContactSolverPath(responder, responseEvents)
+                && responder instanceof ContactSolver3D<?> anySolver) {
             ContactSolver3D<T> solver = (ContactSolver3D<T>) anySolver;
             for (int i = 0; i < solverIterations; i++) {
                 for (CollisionEvent<T> event : responseEvents) {

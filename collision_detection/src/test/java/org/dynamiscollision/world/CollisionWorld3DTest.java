@@ -25,6 +25,8 @@ import org.dynamiscollision.adapters.MeshCollisionAdapter;
 import org.dynamiscollision.bounds.Aabb;
 import org.dynamiscollision.broadphase.SweepAndPrune3D;
 import org.dynamiscollision.contact.ContactGenerator3D;
+import org.dynamiscollision.contact.ContactSolver3D;
+import org.dynamiscollision.contact.WarmStartImpulse;
 import org.dynamiscollision.events.CollisionEvent;
 import org.dynamiscollision.events.CollisionEventType;
 import org.dynamiscollision.filtering.CollisionFilter;
@@ -197,6 +199,78 @@ class CollisionWorld3DTest {
                 CollisionEventType.STAY,
                 CollisionEventType.STAY,
                 CollisionEventType.EXIT), timeline);
+    }
+
+    @Test
+    void defaultResponsePathPolicyUsesLegacyContactSolverSpecialPath() {
+        SimBody a = new SimBody(
+                "a",
+                new org.vectrix.core.Vector3d(0.0, 0.0, 0.0),
+                new org.vectrix.core.Vector3d(1.0, 0.0, 0.0),
+                0.5,
+                1.0,
+                CollisionFilter.DEFAULT);
+        SimBody b = new SimBody(
+                "b",
+                new org.vectrix.core.Vector3d(0.8, 0.0, 0.0),
+                new org.vectrix.core.Vector3d(-1.0, 0.0, 0.0),
+                0.5,
+                1.0,
+                CollisionFilter.DEFAULT);
+        CollisionPair<SimBody> pair = new CollisionPair<>(a, b);
+
+        CollisionWorld3D<SimBody> world = new CollisionWorld3D<>(
+                new SweepAndPrune3D<>(),
+                SimBody::aabb,
+                body -> body.filter,
+                (left, right) -> ContactGenerator3D.generate(left.aabb(), right.aabb()));
+        ContactSolver3D<SimBody> solver = new ContactSolver3D<>(new SimBodyAdapter());
+        world.setResponder(solver);
+        world.setSolverIterations(1);
+
+        world.update(List.of(a, b));
+
+        WarmStartImpulse warmStart = world.manifoldCache().getWarmStart(pair).orElseThrow();
+        assertTrue(
+                Math.abs(warmStart.normalImpulse()) > 1e-9 || Math.abs(warmStart.tangentImpulse()) > 1e-9,
+                "Legacy ContactSolver special path should persist non-zero warm-start by default");
+    }
+
+    @Test
+    void responsePathPolicyCanPreferExplicitResponderHandlingOverLegacySpecialPath() {
+        SimBody a = new SimBody(
+                "a",
+                new org.vectrix.core.Vector3d(0.0, 0.0, 0.0),
+                new org.vectrix.core.Vector3d(1.0, 0.0, 0.0),
+                0.5,
+                1.0,
+                CollisionFilter.DEFAULT);
+        SimBody b = new SimBody(
+                "b",
+                new org.vectrix.core.Vector3d(0.8, 0.0, 0.0),
+                new org.vectrix.core.Vector3d(-1.0, 0.0, 0.0),
+                0.5,
+                1.0,
+                CollisionFilter.DEFAULT);
+        CollisionPair<SimBody> pair = new CollisionPair<>(a, b);
+
+        CollisionWorld3D<SimBody> world = new CollisionWorld3D<>(
+                new SweepAndPrune3D<>(),
+                SimBody::aabb,
+                body -> body.filter,
+                (left, right) -> ContactGenerator3D.generate(left.aabb(), right.aabb()));
+        ContactSolver3D<SimBody> solver = new ContactSolver3D<>(new SimBodyAdapter());
+        world.setResponder(solver);
+        world.setSolverIterations(1);
+        world.setResponsePathPolicy((candidateResponder, events) -> false);
+
+        world.update(List.of(a, b));
+
+        WarmStartImpulse warmStart = world.manifoldCache().getWarmStart(pair).orElseThrow();
+        assertEquals(0.0, warmStart.normalImpulse(), 1e-9,
+                "Policy-disabled special path should keep warm-start at baseline zero");
+        assertEquals(0.0, warmStart.tangentImpulse(), 1e-9,
+                "Policy-disabled special path should keep warm-start at baseline zero");
     }
 
     @Test
