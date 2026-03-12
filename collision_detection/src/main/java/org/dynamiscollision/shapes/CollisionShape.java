@@ -21,7 +21,7 @@ import java.util.Optional;
 import org.dynamiscollision.bounds.Aabb;
 import org.dynamiscollision.geometry.Ray3D;
 import org.dynamiscollision.geometry.RaycastResult;
-import org.vectrix.affine.Transformf;
+import org.dynamisengine.vectrix.affine.Transformf;
 
 /**
  * Generic collidable shape contract for world-space bounds and coarse ray tests.

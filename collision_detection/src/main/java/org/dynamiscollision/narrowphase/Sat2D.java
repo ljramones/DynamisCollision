@@ -18,7 +18,7 @@ package org.dynamiscollision.narrowphase;
 
 import java.util.List;
 import java.util.Optional;
-import org.vectrix.core.Vector2f;
+import org.dynamisengine.vectrix.core.Vector2f;
 
 /**
  * Separating Axis Theorem checks for 2D convex polygons.

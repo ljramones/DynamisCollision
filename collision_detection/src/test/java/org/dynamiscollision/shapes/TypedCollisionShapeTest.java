@@ -2,7 +2,7 @@ package org.dynamiscollision.shapes;
 
 import org.dynamiscollision.bounds.Aabb;
 import org.junit.jupiter.api.Test;
-import org.vectrix.affine.Transformf;
+import org.dynamisengine.vectrix.affine.Transformf;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;

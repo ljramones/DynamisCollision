@@ -32,7 +32,7 @@ import org.meshforge.pack.buffer.Meshlet;
 import org.meshforge.pack.buffer.MeshletBufferView;
 import org.meshforge.pack.buffer.PackedMesh;
 import org.meshforge.pack.layout.VertexLayout;
-import org.vectrix.affine.Transformf;
+import org.dynamisengine.vectrix.affine.Transformf;
 
 class PackedMeshCollisionShapeTest {
 

@@ -163,15 +163,15 @@ class CollisionWorld3DTest {
     void fullPipelineStepProducesOrderedLifecycleEvents() {
         SimBody anchor = new SimBody(
                 "anchor",
-                new org.vectrix.core.Vector3d(0.0, 0.0, 0.0),
-                new org.vectrix.core.Vector3d(0.0, 0.0, 0.0),
+                new org.dynamisengine.vectrix.core.Vector3d(0.0, 0.0, 0.0),
+                new org.dynamisengine.vectrix.core.Vector3d(0.0, 0.0, 0.0),
                 0.5,
                 0.0,
                 CollisionFilter.DEFAULT);
         SimBody mover = new SimBody(
                 "mover",
-                new org.vectrix.core.Vector3d(-2.0, 0.0, 0.0),
-                new org.vectrix.core.Vector3d(1.0, 0.0, 0.0),
+                new org.dynamisengine.vectrix.core.Vector3d(-2.0, 0.0, 0.0),
+                new org.dynamisengine.vectrix.core.Vector3d(1.0, 0.0, 0.0),
                 0.5,
                 1.0,
                 CollisionFilter.DEFAULT);
@@ -182,7 +182,7 @@ class CollisionWorld3DTest {
                 body -> body.filter,
                 (left, right) -> ContactGenerator3D.generate(left.aabb(), right.aabb()));
         world.setBodyAdapter(new SimBodyAdapter());
-        world.setGravity(new org.vectrix.core.Vector3d(0.0, 0.0, 0.0));
+        world.setGravity(new org.dynamisengine.vectrix.core.Vector3d(0.0, 0.0, 0.0));
 
         java.util.ArrayList<CollisionEventType> timeline = new java.util.ArrayList<>();
         for (int i = 0; i < 7; i++) {
@@ -205,15 +205,15 @@ class CollisionWorld3DTest {
     void defaultResponsePathPolicyUsesLegacyContactSolverSpecialPath() {
         SimBody a = new SimBody(
                 "a",
-                new org.vectrix.core.Vector3d(0.0, 0.0, 0.0),
-                new org.vectrix.core.Vector3d(1.0, 0.0, 0.0),
+                new org.dynamisengine.vectrix.core.Vector3d(0.0, 0.0, 0.0),
+                new org.dynamisengine.vectrix.core.Vector3d(1.0, 0.0, 0.0),
                 0.5,
                 1.0,
                 CollisionFilter.DEFAULT);
         SimBody b = new SimBody(
                 "b",
-                new org.vectrix.core.Vector3d(0.8, 0.0, 0.0),
-                new org.vectrix.core.Vector3d(-1.0, 0.0, 0.0),
+                new org.dynamisengine.vectrix.core.Vector3d(0.8, 0.0, 0.0),
+                new org.dynamisengine.vectrix.core.Vector3d(-1.0, 0.0, 0.0),
                 0.5,
                 1.0,
                 CollisionFilter.DEFAULT);
@@ -240,15 +240,15 @@ class CollisionWorld3DTest {
     void responsePathPolicyCanPreferExplicitResponderHandlingOverLegacySpecialPath() {
         SimBody a = new SimBody(
                 "a",
-                new org.vectrix.core.Vector3d(0.0, 0.0, 0.0),
-                new org.vectrix.core.Vector3d(1.0, 0.0, 0.0),
+                new org.dynamisengine.vectrix.core.Vector3d(0.0, 0.0, 0.0),
+                new org.dynamisengine.vectrix.core.Vector3d(1.0, 0.0, 0.0),
                 0.5,
                 1.0,
                 CollisionFilter.DEFAULT);
         SimBody b = new SimBody(
                 "b",
-                new org.vectrix.core.Vector3d(0.8, 0.0, 0.0),
-                new org.vectrix.core.Vector3d(-1.0, 0.0, 0.0),
+                new org.dynamisengine.vectrix.core.Vector3d(0.8, 0.0, 0.0),
+                new org.dynamisengine.vectrix.core.Vector3d(-1.0, 0.0, 0.0),
                 0.5,
                 1.0,
                 CollisionFilter.DEFAULT);
@@ -285,21 +285,21 @@ class CollisionWorld3DTest {
 
         world.setBodyAdapter(new RigidBodyAdapter3D<>() {
             @Override
-            public org.vectrix.core.Vector3d getPosition(Body body) {
-                return new org.vectrix.core.Vector3d(0, 0, 0);
+            public org.dynamisengine.vectrix.core.Vector3d getPosition(Body body) {
+                return new org.dynamisengine.vectrix.core.Vector3d(0, 0, 0);
             }
 
             @Override
-            public void setPosition(Body body, org.vectrix.core.Vector3d position) {
+            public void setPosition(Body body, org.dynamisengine.vectrix.core.Vector3d position) {
             }
 
             @Override
-            public org.vectrix.core.Vector3d getVelocity(Body body) {
-                return new org.vectrix.core.Vector3d(0, 0, 0);
+            public org.dynamisengine.vectrix.core.Vector3d getVelocity(Body body) {
+                return new org.dynamisengine.vectrix.core.Vector3d(0, 0, 0);
             }
 
             @Override
-            public void setVelocity(Body body, org.vectrix.core.Vector3d velocity) {
+            public void setVelocity(Body body, org.dynamisengine.vectrix.core.Vector3d velocity) {
             }
 
             @Override
@@ -393,16 +393,16 @@ class CollisionWorld3DTest {
 
     private static final class SimBody {
         private final String id;
-        private org.vectrix.core.Vector3d position;
-        private org.vectrix.core.Vector3d velocity;
+        private org.dynamisengine.vectrix.core.Vector3d position;
+        private org.dynamisengine.vectrix.core.Vector3d velocity;
         private final double halfExtent;
         private final double inverseMass;
         private final CollisionFilter filter;
 
         private SimBody(
                 String id,
-                org.vectrix.core.Vector3d position,
-                org.vectrix.core.Vector3d velocity,
+                org.dynamisengine.vectrix.core.Vector3d position,
+                org.dynamisengine.vectrix.core.Vector3d velocity,
                 double halfExtent,
                 double inverseMass,
                 CollisionFilter filter) {
@@ -428,22 +428,22 @@ class CollisionWorld3DTest {
 
     private static final class SimBodyAdapter implements RigidBodyAdapter3D<SimBody> {
         @Override
-        public org.vectrix.core.Vector3d getPosition(SimBody body) {
+        public org.dynamisengine.vectrix.core.Vector3d getPosition(SimBody body) {
             return body.position;
         }
 
         @Override
-        public void setPosition(SimBody body, org.vectrix.core.Vector3d position) {
+        public void setPosition(SimBody body, org.dynamisengine.vectrix.core.Vector3d position) {
             body.position = position;
         }
 
         @Override
-        public org.vectrix.core.Vector3d getVelocity(SimBody body) {
+        public org.dynamisengine.vectrix.core.Vector3d getVelocity(SimBody body) {
             return body.velocity;
         }
 
         @Override
-        public void setVelocity(SimBody body, org.vectrix.core.Vector3d velocity) {
+        public void setVelocity(SimBody body, org.dynamisengine.vectrix.core.Vector3d velocity) {
             body.velocity = velocity;
         }
 

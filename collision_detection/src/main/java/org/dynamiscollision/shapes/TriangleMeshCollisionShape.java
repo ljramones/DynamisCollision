@@ -4,9 +4,9 @@ import java.util.Optional;
 import org.dynamiscollision.bounds.Aabb;
 import org.dynamiscollision.geometry.Ray3D;
 import org.dynamiscollision.geometry.RaycastResult;
-import org.vectrix.affine.Transformf;
-import org.vectrix.core.Matrix4x3f;
-import org.vectrix.core.Vector3f;
+import org.dynamisengine.vectrix.affine.Transformf;
+import org.dynamisengine.vectrix.core.Matrix4x3f;
+import org.dynamisengine.vectrix.core.Vector3f;
 
 public final class TriangleMeshCollisionShape implements CollisionShape {
     private final float[] vertices;

@@ -22,7 +22,7 @@ import org.dynamiscollision.narrowphase.CollisionManifold3D;
 import org.dynamiscollision.pipeline.CollisionPair;
 import org.dynamiscollision.world.CollisionResponder3D;
 import org.dynamiscollision.world.RigidBodyAdapter3D;
-import org.vectrix.core.Vector3d;
+import org.dynamisengine.vectrix.core.Vector3d;
 
 /**
  * Basic position/velocity response solver for collision contacts.

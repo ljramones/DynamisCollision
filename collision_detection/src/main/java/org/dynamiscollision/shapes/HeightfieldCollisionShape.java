@@ -4,7 +4,7 @@ import java.util.Optional;
 import org.dynamiscollision.bounds.Aabb;
 import org.dynamiscollision.geometry.Ray3D;
 import org.dynamiscollision.geometry.RaycastResult;
-import org.vectrix.affine.Transformf;
+import org.dynamisengine.vectrix.affine.Transformf;
 
 public final class HeightfieldCollisionShape implements CollisionShape {
     private final float[] heights;

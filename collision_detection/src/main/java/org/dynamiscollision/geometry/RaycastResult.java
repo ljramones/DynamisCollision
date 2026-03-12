@@ -16,7 +16,7 @@
 
 package org.dynamiscollision.geometry;
 
-import org.vectrix.core.Vector3d;
+import org.dynamisengine.vectrix.core.Vector3d;
 
 /**
  * Coarse ray hit result with optional meshlet/triangle metadata.

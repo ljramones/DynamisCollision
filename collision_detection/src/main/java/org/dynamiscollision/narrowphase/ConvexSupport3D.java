@@ -16,7 +16,7 @@
 
 package org.dynamiscollision.narrowphase;
 
-import org.vectrix.core.Vector3d;
+import org.dynamisengine.vectrix.core.Vector3d;
 
 /**
  * Support mapping for convex 3D shapes.

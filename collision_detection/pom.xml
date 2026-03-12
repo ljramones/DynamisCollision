@@ -16,7 +16,7 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.vectrix</groupId>
+      <groupId>org.dynamisengine</groupId>
       <artifactId>vectrix</artifactId>
     </dependency>
     <dependency>

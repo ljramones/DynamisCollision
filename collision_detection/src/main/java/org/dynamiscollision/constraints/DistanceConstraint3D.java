@@ -17,7 +17,7 @@
 package org.dynamiscollision.constraints;
 
 import org.dynamiscollision.world.RigidBodyAdapter3D;
-import org.vectrix.core.Vector3d;
+import org.dynamisengine.vectrix.core.Vector3d;
 
 /**
  * Keeps two bodies near a target distance.

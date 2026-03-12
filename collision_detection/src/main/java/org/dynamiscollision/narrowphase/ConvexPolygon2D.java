@@ -19,7 +19,7 @@ package org.dynamiscollision.narrowphase;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.vectrix.core.Vector2f;
+import org.dynamisengine.vectrix.core.Vector2f;
 
 /**
  * Immutable convex polygon in 2D.

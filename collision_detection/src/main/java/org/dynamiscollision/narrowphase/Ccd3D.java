@@ -18,7 +18,7 @@ package org.dynamiscollision.narrowphase;
 
 import java.util.OptionalDouble;
 import org.dynamiscollision.bounds.Aabb;
-import org.vectrix.core.Vector3d;
+import org.dynamisengine.vectrix.core.Vector3d;
 
 /**
  * Continuous collision detection utilities (time-of-impact style).

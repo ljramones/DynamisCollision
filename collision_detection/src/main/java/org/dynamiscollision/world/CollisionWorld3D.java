@@ -47,7 +47,7 @@ import org.dynamiscollision.pipeline.CollisionPair;
 import org.dynamiscollision.pipeline.FilteredCollisionPair;
 import org.meshforge.core.mesh.MeshData;
 import org.meshforge.pack.buffer.PackedMesh;
-import org.vectrix.core.Vector3d;
+import org.dynamisengine.vectrix.core.Vector3d;
 
 /**
  * Runtime orchestration for broad phase, filtering, narrow phase and event generation.

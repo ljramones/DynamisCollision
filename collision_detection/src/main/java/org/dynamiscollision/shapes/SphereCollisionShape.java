@@ -4,8 +4,8 @@ import java.util.Optional;
 import org.dynamiscollision.bounds.Aabb;
 import org.dynamiscollision.geometry.Ray3D;
 import org.dynamiscollision.geometry.RaycastResult;
-import org.vectrix.affine.Transformf;
-import org.vectrix.core.Vector3d;
+import org.dynamisengine.vectrix.affine.Transformf;
+import org.dynamisengine.vectrix.core.Vector3d;
 
 public final class SphereCollisionShape implements CollisionShape {
     private final float radius;

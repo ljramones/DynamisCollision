@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.OptionalDouble;
 import org.dynamiscollision.bounds.Aabb;
 import org.junit.jupiter.api.Test;
-import org.vectrix.core.Vector3d;
+import org.dynamisengine.vectrix.core.Vector3d;
 
 class Ccd3DTest {
 

@@ -30,7 +30,7 @@ import org.dynamiscollision.pipeline.CollisionPair;
 import org.dynamiscollision.world.CollisionWorld3D;
 import org.dynamiscollision.world.RigidBodyAdapter3D;
 import org.junit.jupiter.api.Test;
-import org.vectrix.core.Vector3d;
+import org.dynamisengine.vectrix.core.Vector3d;
 
 class ContactSolver3DTest {
 

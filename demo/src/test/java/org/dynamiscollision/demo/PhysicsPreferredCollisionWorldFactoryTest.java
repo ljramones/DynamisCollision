@@ -9,7 +9,7 @@ import org.dynamiscollision.world.CollisionResponder3D;
 import org.dynamiscollision.world.CollisionWorld3D;
 import org.dynamisphysics.api.collision.PhysicsContactBodyAdapter;
 import org.junit.jupiter.api.Test;
-import org.vectrix.core.Vector3d;
+import org.dynamisengine.vectrix.core.Vector3d;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;

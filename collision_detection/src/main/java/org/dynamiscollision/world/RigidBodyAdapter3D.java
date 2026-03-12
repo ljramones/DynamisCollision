@@ -16,7 +16,7 @@
 
 package org.dynamiscollision.world;
 
-import org.vectrix.core.Vector3d;
+import org.dynamisengine.vectrix.core.Vector3d;
 
 /**
  * Adapter for reading and writing rigid-body state from user objects.

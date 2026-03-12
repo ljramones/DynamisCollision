@@ -23,7 +23,7 @@ import org.dynamiscollision.bounds.Aabb;
 import org.dynamiscollision.bounds.BoundingSphere;
 import org.dynamiscollision.bounds.Capsule;
 import org.junit.jupiter.api.Test;
-import org.vectrix.core.Vector3d;
+import org.dynamisengine.vectrix.core.Vector3d;
 
 class Gjk3DTest {
 

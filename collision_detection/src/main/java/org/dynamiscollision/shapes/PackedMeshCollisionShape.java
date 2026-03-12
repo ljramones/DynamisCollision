@@ -26,10 +26,10 @@ import org.dynamiscollision.narrowphase.Intersection3D;
 import org.meshforge.pack.buffer.Meshlet;
 import org.meshforge.pack.buffer.MeshletBufferView;
 import org.meshforge.pack.buffer.PackedMesh;
-import org.vectrix.affine.Transformf;
-import org.vectrix.core.Matrix4x3f;
-import org.vectrix.core.Vector3d;
-import org.vectrix.core.Vector3f;
+import org.dynamisengine.vectrix.affine.Transformf;
+import org.dynamisengine.vectrix.core.Matrix4x3f;
+import org.dynamisengine.vectrix.core.Vector3d;
+import org.dynamisengine.vectrix.core.Vector3f;
 
 /**
  * MeshForge-native collision shape backed by {@link PackedMesh}.

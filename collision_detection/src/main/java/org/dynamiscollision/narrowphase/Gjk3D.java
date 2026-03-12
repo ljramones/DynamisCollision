@@ -22,7 +22,7 @@ import java.util.Optional;
 import org.dynamiscollision.bounds.Aabb;
 import org.dynamiscollision.bounds.BoundingSphere;
 import org.dynamiscollision.bounds.Capsule;
-import org.vectrix.core.Vector3d;
+import org.dynamisengine.vectrix.core.Vector3d;
 
 /**
  * GJK intersection test for convex 3D shapes via support mappings.

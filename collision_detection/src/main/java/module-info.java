@@ -1,5 +1,5 @@
 module org.dynamiscollision {
-    requires org.vectrix;
+    requires org.dynamisengine.vectrix;
     requires meshforge;
 
     exports org.dynamiscollision.bounds;
