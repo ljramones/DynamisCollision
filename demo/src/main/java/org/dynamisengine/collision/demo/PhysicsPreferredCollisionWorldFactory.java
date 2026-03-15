@@ -6,9 +6,9 @@ import org.dynamisengine.collision.contact.ContactManifold3D;
 import org.dynamisengine.collision.filtering.CollisionFilter;
 import org.dynamisengine.collision.world.CollisionResponder3D;
 import org.dynamisengine.collision.world.CollisionWorld3D;
-import org.dynamisphysics.api.collision.PhysicsCollisionWorldAssemblies;
-import org.dynamisphysics.api.collision.PhysicsContactBodyAdapter;
-import org.dynamisphysics.api.collision.PhysicsSeamSelectionPolicy;
+import org.dynamisengine.physics.api.collision.PhysicsCollisionWorldAssemblies;
+import org.dynamisengine.physics.api.collision.PhysicsContactBodyAdapter;
+import org.dynamisengine.physics.api.collision.PhysicsSeamSelectionPolicy;
 
 import java.util.Optional;
 import java.util.function.BiFunction;

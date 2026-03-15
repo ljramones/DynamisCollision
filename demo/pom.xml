@@ -21,7 +21,7 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.dynamisphysics</groupId>
+      <groupId>org.dynamisengine.physics</groupId>
       <artifactId>dynamisphysics-api</artifactId>
       <version>0.3.1-SNAPSHOT</version>
     </dependency>

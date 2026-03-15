@@ -7,7 +7,7 @@ import org.dynamisengine.collision.events.CollisionEventType;
 import org.dynamisengine.collision.filtering.CollisionFilter;
 import org.dynamisengine.collision.world.CollisionResponder3D;
 import org.dynamisengine.collision.world.CollisionWorld3D;
-import org.dynamisphysics.api.collision.PhysicsContactBodyAdapter;
+import org.dynamisengine.physics.api.collision.PhysicsContactBodyAdapter;
 import org.junit.jupiter.api.Test;
 import org.dynamisengine.vectrix.core.Vector3d;
 
