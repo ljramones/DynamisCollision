@@ -7,7 +7,7 @@ This repository is currently a minimal scaffold and only includes `.java-version
 - `src/main/resources/` for non-code assets and config templates.
 - `docs/` for design notes and architecture decisions.
 
-Keep package names lowercase (for example, `org.dynamiscollision.core`) and align directories with package paths.
+Keep package names lowercase (for example, `org.dynamisengine.collision.core`) and align directories with package paths.
 
 ## Build, Test, and Development Commands
 No build tool wrapper (`gradlew` or `mvnw`) is committed yet. Until one is added:

@@ -28,13 +28,13 @@ DynamisCollision should own **collision/query substrate authority**:
 
 This aligns best with packages like:
 
-- `org.dynamiscollision.bounds`
-- `org.dynamiscollision.shapes`
-- `org.dynamiscollision.geometry`
-- `org.dynamiscollision.broadphase`
-- `org.dynamiscollision.narrowphase`
-- `org.dynamiscollision.filtering`
-- `org.dynamiscollision.pipeline`
+- `org.dynamisengine.collision.bounds`
+- `org.dynamisengine.collision.shapes`
+- `org.dynamisengine.collision.geometry`
+- `org.dynamisengine.collision.broadphase`
+- `org.dynamisengine.collision.narrowphase`
+- `org.dynamisengine.collision.filtering`
+- `org.dynamisengine.collision.pipeline`
 
 ### What DynamisCollision must not own
 
@@ -85,11 +85,11 @@ Public surface should prioritize substrate contracts and data types:
 
 The module currently exports simulation-oriented packages that are likely beyond strict collision substrate scope:
 
-- `org.dynamiscollision.world`
-- `org.dynamiscollision.contact`
-- `org.dynamiscollision.constraints`
-- `org.dynamiscollision.events`
-- `org.dynamiscollision.debug`
+- `org.dynamisengine.collision.world`
+- `org.dynamisengine.collision.contact`
+- `org.dynamisengine.collision.constraints`
+- `org.dynamisengine.collision.events`
+- `org.dynamisengine.collision.debug`
 
 Evidence examples:
 

@@ -32,7 +32,7 @@ This project is powered by:
     └── src/main/java/org/dynamiscollision/...
 ```
 
-Use `org.dynamiscollision` as the base package for all new code.
+Use `org.dynamisengine.collision` as the base package for all new code.
 
 ## Build and Test
 
