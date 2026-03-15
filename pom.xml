@@ -31,7 +31,7 @@
         <version>${vectrix.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.meshforge</groupId>
+        <groupId>org.dynamisengine</groupId>
         <artifactId>meshforge</artifactId>
         <version>${meshforge.version}</version>
         <scope>compile</scope>
