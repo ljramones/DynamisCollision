@@ -1,6 +1,6 @@
 module org.dynamisengine.collision {
     requires org.dynamisengine.vectrix;
-    requires meshforge;
+    requires org.dynamisengine.meshforge;
 
     exports org.dynamisengine.collision.bounds;
     exports org.dynamisengine.collision.shapes;
